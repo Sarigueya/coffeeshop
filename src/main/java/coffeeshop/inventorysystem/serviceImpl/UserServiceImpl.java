@@ -12,8 +12,8 @@ import coffeeshop.inventorysystem.utils.CafeUtils;
 import coffeeshop.inventorysystem.utils.EmailUtils;
 import coffeeshop.inventorysystem.wrapper.UserWrapper;
 import com.google.common.base.Strings;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,25 +26,20 @@ import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    UserDao userDao;
+    private final UserDao userDao;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    CustomerUsersDetailsService customerUsersDetailsService;
+    private final CustomerUsersDetailsService customerUsersDetailsService;
 
-    @Autowired
-    JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
-    @Autowired
-    EmailUtils emailUtils;
+    private final EmailUtils emailUtils;
 
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestMap) {
@@ -72,8 +67,7 @@ public class UserServiceImpl implements UserService {
                 && requestMap.containsKey("email") && requestMap.containsKey("password");
     }
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     private User getUserFromMap(Map<String, String> requestMap) {
         User user = new User();

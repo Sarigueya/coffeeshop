@@ -5,6 +5,7 @@ import coffeeshop.inventorysystem.rest.UserRest;
 import coffeeshop.inventorysystem.service.UserService;
 import coffeeshop.inventorysystem.utils.CafeUtils;
 import coffeeshop.inventorysystem.wrapper.UserWrapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 public class UserRestImpl implements UserRest {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
 
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestMap) {
