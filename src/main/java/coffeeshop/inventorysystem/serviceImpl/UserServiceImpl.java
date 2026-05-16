@@ -3,8 +3,10 @@ package coffeeshop.inventorysystem.serviceImpl;
 import coffeeshop.inventorysystem.JWT.CustomerUsersDetailsService;
 import coffeeshop.inventorysystem.JWT.JwtFilter;
 import coffeeshop.inventorysystem.JWT.JwtUtil;
+import coffeeshop.inventorysystem.POJO.Rol;
 import coffeeshop.inventorysystem.POJO.User;
 import coffeeshop.inventorysystem.constents.CafeConstants;
+import coffeeshop.inventorysystem.dao.RolDao;
 import coffeeshop.inventorysystem.dao.UserDao;
 import coffeeshop.inventorysystem.service.UserService;
 
@@ -30,6 +32,8 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
+
+    private final RolDao rolDao;
 
     private final AuthenticationManager authenticationManager;
 
@@ -74,9 +78,9 @@ public class UserServiceImpl implements UserService {
         user.setName(requestMap.get("name"));
         user.setContactNumber(requestMap.get("contactNumber"));
         user.setEmail(requestMap.get("email"));
-        user.setPassword(passwordEncoder.encode(requestMap.get("password"))); // ← único cambio
+        user.setPassword(passwordEncoder.encode(requestMap.get("password")));
         user.setStatus("false");
-        user.setRole("user");
+        user.setRol(rolDao.findByNombre("user"));
         return user;
     }
 
@@ -100,7 +104,7 @@ public class UserServiceImpl implements UserService {
                             "{\"token\":\"" +
                                     jwtUtil.generateToken(
                                             customerUsersDetailsService.getUserDetail().getEmail(),
-                                            customerUsersDetailsService.getUserDetail().getRole()
+                                            customerUsersDetailsService.getUserDetail().getRol().getNombre()
                                     ) + "\"}",
                             HttpStatus.OK);
                 }

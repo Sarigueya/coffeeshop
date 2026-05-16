@@ -11,17 +11,17 @@ import java.io.Serializable;
 
 @NamedQuery(
         name = "User.getALLUser",
-        query = "select new coffeeshop.inventorysystem.wrapper.UserWrapper(u.id, u.name, u.email, u.contactNumber, u.status) from User u where u.role='user'"
+        query = "select new coffeeshop.inventorysystem.wrapper.UserWrapper(u.id, u.name, u.email, u.contactNumber, u.status) from User u where u.rol.nombre='user'"
+)
+
+@NamedQuery(
+        name = "User.getAllAdmin",
+        query = "select u.email from User u where u.rol.nombre='admin'"
 )
 
 @NamedQuery(
         name = "User.updateStatus",
         query = "update User u set u.status=:status where u.id=:id"
-)
-
-@NamedQuery(
-        name = "User.getAllAdmin",
-        query = "select u.email from User u where u.role='admin'"
 )
 
 @Entity
@@ -53,8 +53,9 @@ public class User implements Serializable {
     @Column(name = "status")
     private String status;
 
-    @Column(name = "role")
-    private String role;
+    @ManyToOne
+    @JoinColumn(name = "rol_id")
+    private Rol rol;
 
 
 
