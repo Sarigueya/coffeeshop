@@ -1,7 +1,7 @@
 package coffeeshop.inventorysystem;
 
-import coffeeshop.inventorysystem.POJO.Rol;
-import coffeeshop.inventorysystem.dao.RolDao;
+import coffeeshop.inventorysystem.auth.model.Rol;
+import coffeeshop.inventorysystem.auth.repository.RolDao;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
