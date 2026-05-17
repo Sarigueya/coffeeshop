@@ -109,4 +109,19 @@ public class UserRestImpl implements UserRest {
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> assignAdmin(Integer id) {
+        try {
+            return userService.assignAdmin(id);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return CafeUtils.getResponseEntity(
+                CafeConstants.SOMETHING_WENT_WRONG,
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
 }

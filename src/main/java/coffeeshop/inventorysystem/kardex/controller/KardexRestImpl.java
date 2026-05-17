@@ -3,6 +3,7 @@ package coffeeshop.inventorysystem.kardex.controller;
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
 import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
+import coffeeshop.inventorysystem.kardex.dto.VentaRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
 import coffeeshop.inventorysystem.kardex.service.KardexService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ public class KardexRestImpl implements KardexRest {
     private final KardexService kardexService;
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> registrarEntrada(MovimientoRequest request) {
         try {
             return kardexService.registrarEntrada(request);
@@ -32,10 +32,19 @@ public class KardexRestImpl implements KardexRest {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> registrarSalida(MovimientoRequest request) {
         try {
             return kardexService.registrarSalida(request);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> vender(VentaRequest request) {
+        try {
+            return kardexService.vender(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
-public class MovimientoRequest {
+public class VentaRequest {
 
     @NotNull
-    private Integer ingredienteId;
+    private Integer productoId;
 
     @NotNull
     @Positive

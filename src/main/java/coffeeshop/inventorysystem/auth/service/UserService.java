@@ -20,4 +20,6 @@ public interface UserService {
     ResponseEntity<String> changePassword(ChangePasswordRequest request);
 
     ResponseEntity<String> forgotPassword(ForgotPasswordRequest request);
+
+    ResponseEntity<String> assignAdmin(Integer id);
 }

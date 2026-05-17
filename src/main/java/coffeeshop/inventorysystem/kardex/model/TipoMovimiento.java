@@ -1,7 +1,9 @@
 package coffeeshop.inventorysystem.kardex.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -10,6 +12,8 @@ import java.io.Serializable;
 @Entity
 @Table(name = "tipo_movimiento")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @DynamicInsert
 @DynamicUpdate
 public class TipoMovimiento implements Serializable {

@@ -11,6 +11,7 @@ import coffeeshop.inventorysystem.common.EmailUtils;
 import coffeeshop.inventorysystem.security.CustomerUsersDetailsService;
 import coffeeshop.inventorysystem.security.JwtFilter;
 import coffeeshop.inventorysystem.security.JwtUtil;
+import coffeeshop.inventorysystem.auth.service.AuditService;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,8 @@ public class UserServiceImpl implements UserService {
 
     private final EmailUtils emailUtils;
 
+    private final AuditService auditService;
+
     @Override
     public ResponseEntity<String> signUp(SignupRequest request) {
         log.info("Inside signup {}", request);
@@ -51,7 +54,8 @@ public class UserServiceImpl implements UserService {
                     && request.getEmail() != null && request.getPassword() != null) {
                 User user = userDao.findByEmailId(request.getEmail());
                 if (Objects.isNull(user)) {
-                    userDao.save(getUserFromMap(request));
+                    User nuevo = userDao.save(getUserFromMap(request));
+                    auditService.log(nuevo, "SIGNUP", "Usuario registrado: " + nuevo.getEmail());
                     return CafeUtils.getResponseEntity("Successfully Registered.", HttpStatus.OK);
                 } else {
                     return CafeUtils.getResponseEntity("Email already exits.", HttpStatus.BAD_REQUEST);
@@ -73,9 +77,20 @@ public class UserServiceImpl implements UserService {
         user.setContactNumber(request.getContactNumber());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setStatus("false");
-        user.setRol(rolDao.findByNombre("user"));
+
+        if (userDao.count() == 0) {
+            user.setStatus("true");
+            user.setRol(rolDao.findByNombre("admin"));
+        } else {
+            user.setStatus("false");
+            user.setRol(rolDao.findByNombre("user"));
+        }
+
         return user;
+    }
+
+    private boolean esAdmin(User user) {
+        return "admin".equalsIgnoreCase(user.getRol().getNombre());
     }
 
     @Override
@@ -94,11 +109,13 @@ public class UserServiceImpl implements UserService {
                         .getStatus()
                         .equalsIgnoreCase("true")) {
 
+                    User userLogin = customerUsersDetailsService.getUserDetail();
+                    auditService.log(userLogin, "LOGIN", "Inicio de sesión exitoso");
                     return new ResponseEntity<String>(
                             "{\"token\":\"" +
                                     jwtUtil.generateToken(
-                                            customerUsersDetailsService.getUserDetail().getEmail(),
-                                            customerUsersDetailsService.getUserDetail().getRol().getNombre()
+                                            userLogin.getEmail(),
+                                            userLogin.getRol().getNombre()
                                     ) + "\"}",
                             HttpStatus.OK);
                 } else {
@@ -136,10 +153,20 @@ public class UserServiceImpl implements UserService {
         try {
             Optional<User> optional = userDao.findById(request.getId());
             if (!optional.isEmpty()) {
+                if (esAdmin(optional.get())) {
+                    return CafeUtils.getResponseEntity(
+                            "No puedes modificar a otro administrador.",
+                            HttpStatus.FORBIDDEN
+                    );
+                }
+
                 userDao.updateStatus(
                         request.getStatus(),
                         request.getId()
                 );
+                User adminUser = userDao.findByEmailId(jwtFilter.getCurrentUser());
+                auditService.log(adminUser, "STATUS_CHANGE",
+                        "Usuario " + request.getId() + " → " + request.getStatus());
                 sendMailToAllAdmin(
                         request.getStatus(),
                         optional.get().getEmail(),
@@ -157,6 +184,43 @@ public class UserServiceImpl implements UserService {
                 );
             }
 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return CafeUtils.getResponseEntity(
+                CafeConstants.SOMETHING_WENT_WRONG,
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    @Override
+    public ResponseEntity<String> assignAdmin(Integer id) {
+        try {
+            Optional<User> optional = userDao.findById(id);
+            if (optional.isEmpty()) {
+                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.BAD_REQUEST);
+            }
+
+            if (esAdmin(optional.get())) {
+                return CafeUtils.getResponseEntity(
+                        "El usuario ya es administrador.",
+                        HttpStatus.BAD_REQUEST
+                );
+            }
+
+            optional.get().setRol(rolDao.findByNombre("admin"));
+            optional.get().setStatus("true");
+            userDao.save(optional.get());
+
+            User adminUser = userDao.findByEmailId(jwtFilter.getCurrentUser());
+            auditService.log(adminUser, "ASSIGN_ADMIN",
+                    "Usuario " + id + " fue promovido a administrador.");
+
+            return CafeUtils.getResponseEntity(
+                    "Usuario promovido a administrador exitosamente.",
+                    HttpStatus.OK
+            );
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -212,6 +276,8 @@ public class UserServiceImpl implements UserService {
                 if (passwordEncoder.matches(request.getOldPassword(), userObj.getPassword())) {
                     userObj.setPassword(passwordEncoder.encode(request.getNewPassword()));
                     userDao.save(userObj);
+
+                    auditService.log(userObj, "PASSWORD_CHANGE", "Contraseña actualizada");
 
                     return CafeUtils.getResponseEntity(
                             "Password Updated Successfully",

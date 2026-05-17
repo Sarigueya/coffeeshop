@@ -1,15 +1,21 @@
 package coffeeshop.inventorysystem.kardex.service;
 
 import coffeeshop.inventorysystem.auth.model.User;
+import coffeeshop.inventorysystem.auth.repository.UserDao;
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
 import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
+import coffeeshop.inventorysystem.kardex.dto.VentaRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
 import coffeeshop.inventorysystem.kardex.model.Movimiento;
 import coffeeshop.inventorysystem.kardex.repository.KardexDao;
 import coffeeshop.inventorysystem.kardex.repository.MovimientoDao;
+import coffeeshop.inventorysystem.producto.model.Producto;
+import coffeeshop.inventorysystem.producto.model.RecetaDetalle;
+import coffeeshop.inventorysystem.producto.repository.ProductoDao;
+import coffeeshop.inventorysystem.producto.repository.RecetaDetalleDao;
 import coffeeshop.inventorysystem.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +39,12 @@ public class KardexServiceImpl implements KardexService {
 
     private final MovimientoDao movimientoDao;
 
+    private final ProductoDao productoDao;
+
+    private final RecetaDetalleDao recetaDetalleDao;
+
+    private final UserDao userDao;
+
     private final JwtFilter jwtFilter;
 
     private Double obtenerSaldoActual(Integer ingredienteId) {
@@ -45,7 +57,7 @@ public class KardexServiceImpl implements KardexService {
     public ResponseEntity<String> registrarEntrada(MovimientoRequest request) {
         try {
             Optional<Ingrediente> ingredienteOpt = ingredienteDao.findById(request.getIngredienteId());
-            Optional<Movimiento> movimientoOpt = movimientoDao.findById(request.getMovimientoId());
+            Optional<Movimiento> movimientoOpt = movimientoDao.findByNombreMovimiento("Compra");
 
             if (ingredienteOpt.isEmpty()) {
                 return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
@@ -57,11 +69,15 @@ public class KardexServiceImpl implements KardexService {
             Double saldoAnterior = obtenerSaldoActual(request.getIngredienteId());
             Double saldoNuevo = saldoAnterior + request.getCantidad();
 
+            User user = userDao.findByEmailId(jwtFilter.getCurrentUser());
+            if (user == null) {
+                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.UNAUTHORIZED);
+            }
+
             Kardex kardex = new Kardex();
             kardex.setIngrediente(ingredienteOpt.get());
             kardex.setMovimiento(movimientoOpt.get());
-            kardex.setUsuario(new User());
-            kardex.getUsuario().setId(Integer.valueOf(jwtFilter.getCurrentUser()));
+            kardex.setUsuario(user);
             kardex.setCantidad(request.getCantidad());
             kardex.setSaldoAnterior(saldoAnterior);
             kardex.setSaldoNuevo(saldoNuevo);
@@ -79,7 +95,7 @@ public class KardexServiceImpl implements KardexService {
     public ResponseEntity<String> registrarSalida(MovimientoRequest request) {
         try {
             Optional<Ingrediente> ingredienteOpt = ingredienteDao.findById(request.getIngredienteId());
-            Optional<Movimiento> movimientoOpt = movimientoDao.findById(request.getMovimientoId());
+            Optional<Movimiento> movimientoOpt = movimientoDao.findByNombreMovimiento("Daño");
 
             if (ingredienteOpt.isEmpty()) {
                 return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
@@ -96,11 +112,15 @@ public class KardexServiceImpl implements KardexService {
 
             Double saldoNuevo = saldoAnterior - request.getCantidad();
 
+            User user = userDao.findByEmailId(jwtFilter.getCurrentUser());
+            if (user == null) {
+                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.UNAUTHORIZED);
+            }
+
             Kardex kardex = new Kardex();
             kardex.setIngrediente(ingredienteOpt.get());
             kardex.setMovimiento(movimientoOpt.get());
-            kardex.setUsuario(new User());
-            kardex.getUsuario().setId(Integer.valueOf(jwtFilter.getCurrentUser()));
+            kardex.setUsuario(user);
             kardex.setCantidad(request.getCantidad());
             kardex.setSaldoAnterior(saldoAnterior);
             kardex.setSaldoNuevo(saldoNuevo);
@@ -108,6 +128,76 @@ public class KardexServiceImpl implements KardexService {
 
             kardexDao.save(kardex);
             return CafeUtils.getResponseEntity("Salida registrada exitosamente.", HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> vender(VentaRequest request) {
+        try {
+            Optional<Producto> productoOpt = productoDao.findById(request.getProductoId());
+            if (productoOpt.isEmpty()) {
+                return CafeUtils.getResponseEntity("Producto no encontrado.", HttpStatus.BAD_REQUEST);
+            }
+            if (productoOpt.get().getReceta() == null) {
+                return CafeUtils.getResponseEntity("El producto no tiene una receta asociada.", HttpStatus.BAD_REQUEST);
+            }
+
+            Optional<Movimiento> movimientoOpt = movimientoDao.findByNombreMovimiento("Venta");
+            if (movimientoOpt.isEmpty()) {
+                return CafeUtils.getResponseEntity("Movimiento no encontrado.", HttpStatus.BAD_REQUEST);
+            }
+
+            List<RecetaDetalle> detalles = recetaDetalleDao.findByRecetaId(
+                    productoOpt.get().getReceta().getId()
+            );
+
+            if (detalles.isEmpty()) {
+                return CafeUtils.getResponseEntity("La receta del producto no tiene ingredientes.", HttpStatus.BAD_REQUEST);
+            }
+
+            List<String> erroresStock = new ArrayList<>();
+            for (RecetaDetalle detalle : detalles) {
+                Double necesario = request.getCantidad() * detalle.getCantidadRequerida();
+                Double saldoActual = obtenerSaldoActual(detalle.getIngrediente().getId());
+                if (saldoActual < necesario) {
+                    erroresStock.add("Stock insuficiente de '" + detalle.getIngrediente().getNombre()
+                            + "' (necesario: " + necesario + ", disponible: " + saldoActual + ")");
+                }
+            }
+
+            if (!erroresStock.isEmpty()) {
+                return CafeUtils.getResponseEntity(
+                        "No se puede realizar la venta:\n" + String.join("\n", erroresStock),
+                        HttpStatus.BAD_REQUEST
+                );
+            }
+
+            User user = userDao.findByEmailId(jwtFilter.getCurrentUser());
+            if (user == null) {
+                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.UNAUTHORIZED);
+            }
+
+            for (RecetaDetalle detalle : detalles) {
+                Double necesario = request.getCantidad() * detalle.getCantidadRequerida();
+                Double saldoAnterior = obtenerSaldoActual(detalle.getIngrediente().getId());
+                Double saldoNuevo = saldoAnterior - necesario;
+
+                Kardex kardex = new Kardex();
+                kardex.setIngrediente(detalle.getIngrediente());
+                kardex.setMovimiento(movimientoOpt.get());
+                kardex.setUsuario(user);
+                kardex.setCantidad(necesario);
+                kardex.setSaldoAnterior(saldoAnterior);
+                kardex.setSaldoNuevo(saldoNuevo);
+                kardex.setFecha(LocalDateTime.now());
+
+                kardexDao.save(kardex);
+            }
+
+            return CafeUtils.getResponseEntity("Venta registrada exitosamente.", HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

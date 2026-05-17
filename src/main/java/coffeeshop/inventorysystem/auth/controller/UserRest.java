@@ -32,4 +32,7 @@ public interface UserRest {
 
     @PostMapping(path = "/forgotPassword")
     ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request);
+
+    @PostMapping(path = "/assign-admin/{id}")
+    ResponseEntity<String> assignAdmin(@PathVariable Integer id);
 }

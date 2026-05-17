@@ -1,6 +1,7 @@
 package coffeeshop.inventorysystem.kardex.controller;
 
 import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
+import coffeeshop.inventorysystem.kardex.dto.VentaRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
 import coffeeshop.inventorysystem.kardex.service.KardexService;
 import jakarta.validation.Valid;
@@ -17,6 +18,9 @@ public interface KardexRest {
 
     @PostMapping(path = "/salida")
     ResponseEntity<String> registrarSalida(@Valid @RequestBody MovimientoRequest request);
+
+    @PostMapping(path = "/vender")
+    ResponseEntity<String> vender(@Valid @RequestBody VentaRequest request);
 
     @GetMapping(path = "/ingrediente/{ingredienteId}")
     ResponseEntity<List<Kardex>> getByIngrediente(@PathVariable Integer ingredienteId);
