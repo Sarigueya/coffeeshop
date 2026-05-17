@@ -6,6 +6,7 @@ import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
+import coffeeshop.inventorysystem.kardex.dto.KardexSaldoResponse;
 import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
 import coffeeshop.inventorysystem.kardex.dto.VentaRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
@@ -127,7 +128,15 @@ public class KardexServiceImpl implements KardexService {
             kardex.setFecha(LocalDateTime.now());
 
             kardexDao.save(kardex);
-            return CafeUtils.getResponseEntity("Salida registrada exitosamente.", HttpStatus.OK);
+
+            Ingrediente ingrediente = ingredienteOpt.get();
+            String mensaje = "Salida registrada exitosamente.";
+            if (saldoNuevo < ingrediente.getStockMinimo()) {
+                mensaje += " Stock bajo de '" + ingrediente.getNombre()
+                        + "' (actual: " + saldoNuevo + ", mínimo: " + ingrediente.getStockMinimo() + ")";
+            }
+
+            return CafeUtils.getResponseEntity(mensaje, HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -162,9 +171,14 @@ public class KardexServiceImpl implements KardexService {
             for (RecetaDetalle detalle : detalles) {
                 Double necesario = request.getCantidad() * detalle.getCantidadRequerida();
                 Double saldoActual = obtenerSaldoActual(detalle.getIngrediente().getId());
+                Double saldoFinal = saldoActual - necesario;
                 if (saldoActual < necesario) {
                     erroresStock.add("Stock insuficiente de '" + detalle.getIngrediente().getNombre()
                             + "' (necesario: " + necesario + ", disponible: " + saldoActual + ")");
+                } else if (saldoFinal < detalle.getIngrediente().getStockMinimo()) {
+                    erroresStock.add("La venta dejaría el stock de '" + detalle.getIngrediente().getNombre()
+                            + "' por debajo del mínimo (" + saldoFinal + " < "
+                            + detalle.getIngrediente().getStockMinimo() + ")");
                 }
             }
 
@@ -202,6 +216,22 @@ public class KardexServiceImpl implements KardexService {
             ex.printStackTrace();
         }
         return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<KardexSaldoResponse>> getSaldos() {
+        try {
+            List<Ingrediente> ingredientes = ingredienteDao.findAll();
+            List<KardexSaldoResponse> saldos = new ArrayList<>();
+            for (Ingrediente ing : ingredientes) {
+                Double saldo = obtenerSaldoActual(ing.getId());
+                saldos.add(new KardexSaldoResponse(ing.getId(), ing.getNombre(), saldo));
+            }
+            return new ResponseEntity<>(saldos, HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override

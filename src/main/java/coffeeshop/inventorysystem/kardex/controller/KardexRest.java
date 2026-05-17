@@ -1,9 +1,9 @@
 package coffeeshop.inventorysystem.kardex.controller;
 
+import coffeeshop.inventorysystem.kardex.dto.KardexSaldoResponse;
 import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
 import coffeeshop.inventorysystem.kardex.dto.VentaRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
-import coffeeshop.inventorysystem.kardex.service.KardexService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,4 +27,7 @@ public interface KardexRest {
 
     @GetMapping(path = "/getAll")
     ResponseEntity<List<Kardex>> getAll();
+
+    @GetMapping(path = "/getSaldos")
+    ResponseEntity<List<KardexSaldoResponse>> getSaldos();
 }
