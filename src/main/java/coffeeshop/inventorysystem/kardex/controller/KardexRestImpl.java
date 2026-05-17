@@ -2,6 +2,7 @@ package coffeeshop.inventorysystem.kardex.controller;
 
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
 import coffeeshop.inventorysystem.kardex.service.KardexService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,9 +20,9 @@ public class KardexRestImpl implements KardexRest {
     private final KardexService kardexService;
 
     @Override
-    public ResponseEntity<String> registrarEntrada(Map<String, String> requestMap) {
+    public ResponseEntity<String> registrarEntrada(MovimientoRequest request) {
         try {
-            return kardexService.registrarEntrada(requestMap);
+            return kardexService.registrarEntrada(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -30,9 +30,9 @@ public class KardexRestImpl implements KardexRest {
     }
 
     @Override
-    public ResponseEntity<String> registrarSalida(Map<String, String> requestMap) {
+    public ResponseEntity<String> registrarSalida(MovimientoRequest request) {
         try {
-            return kardexService.registrarSalida(requestMap);
+            return kardexService.registrarSalida(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

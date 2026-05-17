@@ -5,6 +5,7 @@ import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
+import coffeeshop.inventorysystem.kardex.dto.MovimientoRequest;
 import coffeeshop.inventorysystem.kardex.model.Kardex;
 import coffeeshop.inventorysystem.kardex.model.Movimiento;
 import coffeeshop.inventorysystem.kardex.repository.KardexDao;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -42,14 +42,10 @@ public class KardexServiceImpl implements KardexService {
     }
 
     @Override
-    public ResponseEntity<String> registrarEntrada(Map<String, String> requestMap) {
+    public ResponseEntity<String> registrarEntrada(MovimientoRequest request) {
         try {
-            Integer ingredienteId = Integer.parseInt(requestMap.get("ingredienteId"));
-            Integer movimientoId = Integer.parseInt(requestMap.get("movimientoId"));
-            Double cantidad = Double.parseDouble(requestMap.get("cantidad"));
-
-            Optional<Ingrediente> ingredienteOpt = ingredienteDao.findById(ingredienteId);
-            Optional<Movimiento> movimientoOpt = movimientoDao.findById(movimientoId);
+            Optional<Ingrediente> ingredienteOpt = ingredienteDao.findById(request.getIngredienteId());
+            Optional<Movimiento> movimientoOpt = movimientoDao.findById(request.getMovimientoId());
 
             if (ingredienteOpt.isEmpty()) {
                 return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
@@ -58,15 +54,15 @@ public class KardexServiceImpl implements KardexService {
                 return CafeUtils.getResponseEntity("Movimiento no encontrado.", HttpStatus.BAD_REQUEST);
             }
 
-            Double saldoAnterior = obtenerSaldoActual(ingredienteId);
-            Double saldoNuevo = saldoAnterior + cantidad;
+            Double saldoAnterior = obtenerSaldoActual(request.getIngredienteId());
+            Double saldoNuevo = saldoAnterior + request.getCantidad();
 
             Kardex kardex = new Kardex();
             kardex.setIngrediente(ingredienteOpt.get());
             kardex.setMovimiento(movimientoOpt.get());
             kardex.setUsuario(new User());
             kardex.getUsuario().setId(Integer.valueOf(jwtFilter.getCurrentUser()));
-            kardex.setCantidad(cantidad);
+            kardex.setCantidad(request.getCantidad());
             kardex.setSaldoAnterior(saldoAnterior);
             kardex.setSaldoNuevo(saldoNuevo);
             kardex.setFecha(LocalDateTime.now());
@@ -80,14 +76,10 @@ public class KardexServiceImpl implements KardexService {
     }
 
     @Override
-    public ResponseEntity<String> registrarSalida(Map<String, String> requestMap) {
+    public ResponseEntity<String> registrarSalida(MovimientoRequest request) {
         try {
-            Integer ingredienteId = Integer.parseInt(requestMap.get("ingredienteId"));
-            Integer movimientoId = Integer.parseInt(requestMap.get("movimientoId"));
-            Double cantidad = Double.parseDouble(requestMap.get("cantidad"));
-
-            Optional<Ingrediente> ingredienteOpt = ingredienteDao.findById(ingredienteId);
-            Optional<Movimiento> movimientoOpt = movimientoDao.findById(movimientoId);
+            Optional<Ingrediente> ingredienteOpt = ingredienteDao.findById(request.getIngredienteId());
+            Optional<Movimiento> movimientoOpt = movimientoDao.findById(request.getMovimientoId());
 
             if (ingredienteOpt.isEmpty()) {
                 return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
@@ -96,20 +88,20 @@ public class KardexServiceImpl implements KardexService {
                 return CafeUtils.getResponseEntity("Movimiento no encontrado.", HttpStatus.BAD_REQUEST);
             }
 
-            Double saldoAnterior = obtenerSaldoActual(ingredienteId);
+            Double saldoAnterior = obtenerSaldoActual(request.getIngredienteId());
 
-            if (saldoAnterior < cantidad) {
+            if (saldoAnterior < request.getCantidad()) {
                 return CafeUtils.getResponseEntity("Stock insuficiente.", HttpStatus.BAD_REQUEST);
             }
 
-            Double saldoNuevo = saldoAnterior - cantidad;
+            Double saldoNuevo = saldoAnterior - request.getCantidad();
 
             Kardex kardex = new Kardex();
             kardex.setIngrediente(ingredienteOpt.get());
             kardex.setMovimiento(movimientoOpt.get());
             kardex.setUsuario(new User());
             kardex.getUsuario().setId(Integer.valueOf(jwtFilter.getCurrentUser()));
-            kardex.setCantidad(cantidad);
+            kardex.setCantidad(request.getCantidad());
             kardex.setSaldoAnterior(saldoAnterior);
             kardex.setSaldoNuevo(saldoNuevo);
             kardex.setFecha(LocalDateTime.now());

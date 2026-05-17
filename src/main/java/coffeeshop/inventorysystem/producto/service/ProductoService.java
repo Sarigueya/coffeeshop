@@ -1,16 +1,16 @@
 package coffeeshop.inventorysystem.producto.service;
 
+import coffeeshop.inventorysystem.producto.dto.ProductoRequest;
 import coffeeshop.inventorysystem.producto.model.Producto;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ProductoService {
 
-    ResponseEntity<String> create(Map<String, String> requestMap);
+    ResponseEntity<String> create(ProductoRequest request);
 
-    ResponseEntity<String> update(Map<String, String> requestMap);
+    ResponseEntity<String> update(ProductoRequest request);
 
     ResponseEntity<String> delete(Integer id);
 

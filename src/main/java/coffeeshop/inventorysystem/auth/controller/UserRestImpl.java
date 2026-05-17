@@ -1,5 +1,6 @@
 package coffeeshop.inventorysystem.auth.controller;
 
+import coffeeshop.inventorysystem.auth.dto.*;
 import coffeeshop.inventorysystem.auth.dto.UserWrapper;
 import coffeeshop.inventorysystem.auth.service.UserService;
 import coffeeshop.inventorysystem.common.CafeConstants;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,9 +20,9 @@ public class UserRestImpl implements UserRest {
     private final UserService userService;
 
     @Override
-    public ResponseEntity<String> signUp(Map<String, String> requestMap) {
+    public ResponseEntity<String> signUp(SignupRequest request) {
         try {
-            return userService.signUp(requestMap);
+            return userService.signUp(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -30,9 +30,9 @@ public class UserRestImpl implements UserRest {
     }
 
     @Override
-    public ResponseEntity<String> login(Map<String, String> requestMap) {
+    public ResponseEntity<String> login(LoginRequest request) {
         try {
-            return userService.login(requestMap);
+            return userService.login(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -55,9 +55,9 @@ public class UserRestImpl implements UserRest {
     }
 
     @Override
-    public ResponseEntity<String> update(Map<String, String> requestMap) {
+    public ResponseEntity<String> update(UpdateUserRequest request) {
         try {
-            return userService.update(requestMap);
+            return userService.update(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -81,9 +81,9 @@ public class UserRestImpl implements UserRest {
     }
 
     @Override
-    public ResponseEntity<String> changePassword(Map<String, String> requestMap) {
+    public ResponseEntity<String> changePassword(ChangePasswordRequest request) {
         try {
-            return userService.changePassword(requestMap);
+            return userService.changePassword(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -94,9 +94,9 @@ public class UserRestImpl implements UserRest {
     }
 
     @Override
-    public ResponseEntity<String> forgotPassword(Map<String, String> requestMap) {
+    public ResponseEntity<String> forgotPassword(ForgotPasswordRequest request) {
         try {
-            return userService.forgotPassword(requestMap);
+            return userService.forgotPassword(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

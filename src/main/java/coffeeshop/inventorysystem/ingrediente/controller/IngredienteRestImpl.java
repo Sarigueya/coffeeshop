@@ -2,6 +2,7 @@ package coffeeshop.inventorysystem.ingrediente.controller;
 
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.ingrediente.dto.IngredienteRequest;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import coffeeshop.inventorysystem.ingrediente.service.IngredienteService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,9 +20,9 @@ public class IngredienteRestImpl implements IngredienteRest {
     private final IngredienteService ingredienteService;
 
     @Override
-    public ResponseEntity<String> create(Map<String, String> requestMap) {
+    public ResponseEntity<String> create(IngredienteRequest request) {
         try {
-            return ingredienteService.create(requestMap);
+            return ingredienteService.create(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -30,9 +30,9 @@ public class IngredienteRestImpl implements IngredienteRest {
     }
 
     @Override
-    public ResponseEntity<String> update(Map<String, String> requestMap) {
+    public ResponseEntity<String> update(IngredienteRequest request) {
         try {
-            return ingredienteService.update(requestMap);
+            return ingredienteService.update(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

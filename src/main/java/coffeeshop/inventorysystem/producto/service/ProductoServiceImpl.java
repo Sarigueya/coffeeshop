@@ -2,6 +2,7 @@ package coffeeshop.inventorysystem.producto.service;
 
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.producto.dto.ProductoRequest;
 import coffeeshop.inventorysystem.producto.model.Producto;
 import coffeeshop.inventorysystem.producto.model.Receta;
 import coffeeshop.inventorysystem.producto.repository.ProductoDao;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -27,16 +27,16 @@ public class ProductoServiceImpl implements ProductoService {
     private final RecetaDao recetaDao;
 
     @Override
-    public ResponseEntity<String> create(Map<String, String> requestMap) {
+    public ResponseEntity<String> create(ProductoRequest request) {
         try {
             Producto producto = new Producto();
-            producto.setNombre(requestMap.get("nombre"));
-            producto.setDescripcion(requestMap.get("descripcion"));
-            producto.setPrecioVenta(Double.parseDouble(requestMap.get("precioVenta")));
+            producto.setNombre(request.getNombre());
+            producto.setDescripcion(request.getDescripcion());
+            producto.setPrecioVenta(request.getPrecioVenta());
             producto.setActivo(true);
 
-            if (requestMap.containsKey("recetaId")) {
-                Optional<Receta> receta = recetaDao.findById(Integer.parseInt(requestMap.get("recetaId")));
+            if (request.getRecetaId() != null) {
+                Optional<Receta> receta = recetaDao.findById(request.getRecetaId());
                 receta.ifPresent(producto::setReceta);
             }
 
@@ -49,17 +49,17 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public ResponseEntity<String> update(Map<String, String> requestMap) {
+    public ResponseEntity<String> update(ProductoRequest request) {
         try {
-            Optional<Producto> optional = productoDao.findById(Integer.parseInt(requestMap.get("id")));
+            Optional<Producto> optional = productoDao.findById(request.getId());
             if (optional.isPresent()) {
                 Producto producto = optional.get();
-                if (requestMap.containsKey("nombre")) producto.setNombre(requestMap.get("nombre"));
-                if (requestMap.containsKey("descripcion")) producto.setDescripcion(requestMap.get("descripcion"));
-                if (requestMap.containsKey("precioVenta")) producto.setPrecioVenta(Double.parseDouble(requestMap.get("precioVenta")));
-                if (requestMap.containsKey("activo")) producto.setActivo(Boolean.parseBoolean(requestMap.get("activo")));
-                if (requestMap.containsKey("recetaId")) {
-                    Optional<Receta> receta = recetaDao.findById(Integer.parseInt(requestMap.get("recetaId")));
+                if (request.getNombre() != null) producto.setNombre(request.getNombre());
+                if (request.getDescripcion() != null) producto.setDescripcion(request.getDescripcion());
+                if (request.getPrecioVenta() != null) producto.setPrecioVenta(request.getPrecioVenta());
+                if (request.getActivo() != null) producto.setActivo(request.getActivo());
+                if (request.getRecetaId() != null) {
+                    Optional<Receta> receta = recetaDao.findById(request.getRecetaId());
                     receta.ifPresent(producto::setReceta);
                 }
                 productoDao.save(producto);

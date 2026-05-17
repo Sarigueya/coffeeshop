@@ -1,24 +1,23 @@
 package coffeeshop.inventorysystem.auth.service;
 
-import coffeeshop.inventorysystem.auth.dto.UserWrapper;
+import coffeeshop.inventorysystem.auth.dto.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
 public interface UserService {
 
-    ResponseEntity<String> signUp(Map<String, String> requestMap);
+    ResponseEntity<String> signUp(SignupRequest request);
 
-    ResponseEntity<String> login(Map<String, String> requestMap);
+    ResponseEntity<String> login(LoginRequest request);
 
     ResponseEntity<List<UserWrapper>> getALLUser();
 
-    ResponseEntity<String> update(Map<String, String> requestMap);
+    ResponseEntity<String> update(UpdateUserRequest request);
 
     ResponseEntity<String> checkToken();
 
-    ResponseEntity<String> changePassword(Map<String, String> requestMap);
+    ResponseEntity<String> changePassword(ChangePasswordRequest request);
 
-    ResponseEntity<String> forgotPassword(Map<String, String> requestMap);
+    ResponseEntity<String> forgotPassword(ForgotPasswordRequest request);
 }

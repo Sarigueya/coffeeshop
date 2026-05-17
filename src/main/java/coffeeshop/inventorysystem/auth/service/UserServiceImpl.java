@@ -1,6 +1,6 @@
 package coffeeshop.inventorysystem.auth.service;
 
-import coffeeshop.inventorysystem.auth.dto.UserWrapper;
+import coffeeshop.inventorysystem.auth.dto.*;
 import coffeeshop.inventorysystem.auth.model.Rol;
 import coffeeshop.inventorysystem.auth.model.User;
 import coffeeshop.inventorysystem.auth.repository.RolDao;
@@ -44,13 +44,14 @@ public class UserServiceImpl implements UserService {
     private final EmailUtils emailUtils;
 
     @Override
-    public ResponseEntity<String> signUp(Map<String, String> requestMap) {
-        log.info("Inside signup {}", requestMap);
+    public ResponseEntity<String> signUp(SignupRequest request) {
+        log.info("Inside signup {}", request);
         try {
-            if (validateSignUpMap(requestMap)) {
-                User user = userDao.findByEmailId(requestMap.get("email"));
+            if (request.getName() != null && request.getContactNumber() != null
+                    && request.getEmail() != null && request.getPassword() != null) {
+                User user = userDao.findByEmailId(request.getEmail());
                 if (Objects.isNull(user)) {
-                    userDao.save(getUserFromMap(requestMap));
+                    userDao.save(getUserFromMap(request));
                     return CafeUtils.getResponseEntity("Successfully Registered.", HttpStatus.OK);
                 } else {
                     return CafeUtils.getResponseEntity("Email already exits.", HttpStatus.BAD_REQUEST);
@@ -58,38 +59,33 @@ public class UserServiceImpl implements UserService {
             } else {
                 return CafeUtils.getResponseEntity(CafeConstants.INVALID_DATA, HttpStatus.BAD_REQUEST);
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private boolean validateSignUpMap(Map<String, String> requestMap) {
-        return requestMap.containsKey("name") && requestMap.containsKey("contactNumber")
-                && requestMap.containsKey("email") && requestMap.containsKey("password");
-    }
-
     private final PasswordEncoder passwordEncoder;
 
-    private User getUserFromMap(Map<String, String> requestMap) {
+    private User getUserFromMap(SignupRequest request) {
         User user = new User();
-        user.setName(requestMap.get("name"));
-        user.setContactNumber(requestMap.get("contactNumber"));
-        user.setEmail(requestMap.get("email"));
-        user.setPassword(passwordEncoder.encode(requestMap.get("password")));
+        user.setName(request.getName());
+        user.setContactNumber(request.getContactNumber());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setStatus("false");
         user.setRol(rolDao.findByNombre("user"));
         return user;
     }
 
     @Override
-    public ResponseEntity<String> login(Map<String, String> requestMap) {
+    public ResponseEntity<String> login(LoginRequest request) {
         log.info("Inside login");
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            requestMap.get("email"),
-                            requestMap.get("password")
+                            request.getEmail(),
+                            request.getPassword()
                     )
             );
             if (auth.isAuthenticated()) {
@@ -105,8 +101,7 @@ public class UserServiceImpl implements UserService {
                                             customerUsersDetailsService.getUserDetail().getRol().getNombre()
                                     ) + "\"}",
                             HttpStatus.OK);
-                }
-                else {
+                } else {
 
                     return new ResponseEntity<String>(
                             "{\"message\":\"" + "Wait for admin approval." + "\"}",
@@ -144,17 +139,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<String> update(Map<String, String> requestMap) {
+    public ResponseEntity<String> update(UpdateUserRequest request) {
         try {
             if (jwtFilter.isAdmin()) {
-                Optional<User> optional = userDao.findById(Integer.parseInt(requestMap.get("id")));
+                Optional<User> optional = userDao.findById(request.getId());
                 if (!optional.isEmpty()) {
                     userDao.updateStatus(
-                            requestMap.get("status"),
-                            Integer.parseInt(requestMap.get("id"))
+                            request.getStatus(),
+                            request.getId()
                     );
                     sendMailToAllAdmin(
-                            requestMap.get("status"),
+                            request.getStatus(),
                             optional.get().getEmail(),
                             userDao.getAllAdmin()
                     );
@@ -187,7 +182,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    private void sendMailToAllAdmin(String status, String user , List<String> allAdmin) {
+    private void sendMailToAllAdmin(String status, String user, List<String> allAdmin) {
 
         allAdmin.remove(jwtFilter.getCurrentUser());
 
@@ -212,7 +207,6 @@ public class UserServiceImpl implements UserService {
             sendMailToUser(user, "Account Disabled",
                     "Your account has been disabled. Please contact an administrator.");
         }
-
     }
 
     private void sendMailToUser(String user, String subject, String text) {
@@ -225,13 +219,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<String> changePassword(Map<String, String> requestMap) {
+    public ResponseEntity<String> changePassword(ChangePasswordRequest request) {
         try {
             User userObj = userDao.findByEmail(jwtFilter.getCurrentUser());
 
             if (userObj != null) {
-                if (passwordEncoder.matches(requestMap.get("oldPassword"), userObj.getPassword())) {
-                    userObj.setPassword(passwordEncoder.encode(requestMap.get("newPassword")));
+                if (passwordEncoder.matches(request.getOldPassword(), userObj.getPassword())) {
+                    userObj.setPassword(passwordEncoder.encode(request.getNewPassword()));
                     userDao.save(userObj);
 
                     return CafeUtils.getResponseEntity(
@@ -261,9 +255,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<String> forgotPassword(Map<String, String> requestMap) {
+    public ResponseEntity<String> forgotPassword(ForgotPasswordRequest request) {
         try {
-            User user = userDao.findByEmail(requestMap.get("email"));
+            User user = userDao.findByEmail(request.getEmail());
 
             if (!Objects.isNull(user) && !Strings.isNullOrEmpty(user.getEmail())) {
                 String tempPassword = UUID.randomUUID().toString().substring(0, 8);

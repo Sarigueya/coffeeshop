@@ -1,13 +1,14 @@
-package coffeeshop.inventorysystem.producto.controller;
+package coffeeshop.inventorysystem.ingrediente.controller;
 
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
-import coffeeshop.inventorysystem.producto.dto.ProductoRequest;
-import coffeeshop.inventorysystem.producto.model.Producto;
-import coffeeshop.inventorysystem.producto.service.ProductoService;
+import coffeeshop.inventorysystem.ingrediente.dto.UnidadMedidaRequest;
+import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
+import coffeeshop.inventorysystem.ingrediente.service.UnidadMedidaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -15,14 +16,15 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class ProductoRestImpl implements ProductoRest {
+public class UnidadMedidaRestImpl implements UnidadMedidaRest {
 
-    private final ProductoService productoService;
+    private final UnidadMedidaService unidadMedidaService;
 
     @Override
-    public ResponseEntity<String> create(ProductoRequest request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> create(UnidadMedidaRequest request) {
         try {
-            return productoService.create(request);
+            return unidadMedidaService.create(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -30,9 +32,10 @@ public class ProductoRestImpl implements ProductoRest {
     }
 
     @Override
-    public ResponseEntity<String> update(ProductoRequest request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> update(UnidadMedidaRequest request) {
         try {
-            return productoService.update(request);
+            return unidadMedidaService.update(request);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -40,9 +43,10 @@ public class ProductoRestImpl implements ProductoRest {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(Integer id) {
         try {
-            return productoService.delete(id);
+            return unidadMedidaService.delete(id);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -50,19 +54,19 @@ public class ProductoRestImpl implements ProductoRest {
     }
 
     @Override
-    public ResponseEntity<Producto> getById(Integer id) {
+    public ResponseEntity<UnidadMedida> getById(Integer id) {
         try {
-            return productoService.getById(id);
+            return unidadMedidaService.getById(id);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return new ResponseEntity<>(new Producto(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new UnidadMedida(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<Producto>> getAll() {
+    public ResponseEntity<List<UnidadMedida>> getAll() {
         try {
-            return productoService.getAll();
+            return unidadMedidaService.getAll();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

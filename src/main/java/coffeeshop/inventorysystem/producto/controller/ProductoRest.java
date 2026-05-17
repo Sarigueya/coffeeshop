@@ -1,21 +1,22 @@
 package coffeeshop.inventorysystem.producto.controller;
 
+import coffeeshop.inventorysystem.producto.dto.ProductoRequest;
 import coffeeshop.inventorysystem.producto.model.Producto;
 import coffeeshop.inventorysystem.producto.service.ProductoService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RequestMapping(path = "/producto")
 public interface ProductoRest {
 
     @PostMapping(path = "/create")
-    ResponseEntity<String> create(@RequestBody Map<String, String> requestMap);
+    ResponseEntity<String> create(@Valid @RequestBody ProductoRequest request);
 
     @PutMapping(path = "/update")
-    ResponseEntity<String> update(@RequestBody Map<String, String> requestMap);
+    ResponseEntity<String> update(@Valid @RequestBody ProductoRequest request);
 
     @DeleteMapping(path = "/delete/{id}")
     ResponseEntity<String> delete(@PathVariable Integer id);

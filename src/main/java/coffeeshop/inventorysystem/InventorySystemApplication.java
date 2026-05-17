@@ -2,6 +2,8 @@ package coffeeshop.inventorysystem;
 
 import coffeeshop.inventorysystem.auth.model.Rol;
 import coffeeshop.inventorysystem.auth.repository.RolDao;
+import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
+import coffeeshop.inventorysystem.ingrediente.repository.UnidadMedidaDao;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,6 +24,19 @@ public class InventorySystemApplication {
             }
             if (rolDao.findByNombre("user") == null) {
                 rolDao.save(new Rol(null, "user"));
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner initUnidades(UnidadMedidaDao unidadMedidaDao) {
+        return args -> {
+            if (unidadMedidaDao.count() == 0) {
+                unidadMedidaDao.save(new UnidadMedida(null, "g"));
+                unidadMedidaDao.save(new UnidadMedida(null, "ml"));
+                unidadMedidaDao.save(new UnidadMedida(null, "kg"));
+                unidadMedidaDao.save(new UnidadMedida(null, "L"));
+                unidadMedidaDao.save(new UnidadMedida(null, "unidades"));
             }
         };
     }

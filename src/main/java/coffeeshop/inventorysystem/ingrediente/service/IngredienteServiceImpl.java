@@ -2,6 +2,7 @@ package coffeeshop.inventorysystem.ingrediente.service;
 
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.ingrediente.dto.IngredienteRequest;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
 import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -27,16 +27,16 @@ public class IngredienteServiceImpl implements IngredienteService {
     private final UnidadMedidaDao unidadMedidaDao;
 
     @Override
-    public ResponseEntity<String> create(Map<String, String> requestMap) {
+    public ResponseEntity<String> create(IngredienteRequest request) {
         try {
             Ingrediente ingrediente = new Ingrediente();
-            ingrediente.setNombre(requestMap.get("nombre"));
-            ingrediente.setCostoUnitario(Double.parseDouble(requestMap.get("costoUnitario")));
+            ingrediente.setNombre(request.getNombre());
+            ingrediente.setCostoUnitario(request.getCostoUnitario());
             ingrediente.setActivo(true);
-            ingrediente.setStockMinimo(Double.parseDouble(requestMap.get("stockMinimo")));
+            ingrediente.setStockMinimo(request.getStockMinimo());
 
-            if (requestMap.containsKey("unidadMedidaId")) {
-                Optional<UnidadMedida> um = unidadMedidaDao.findById(Integer.parseInt(requestMap.get("unidadMedidaId")));
+            if (request.getUnidadMedidaId() != null) {
+                Optional<UnidadMedida> um = unidadMedidaDao.findById(request.getUnidadMedidaId());
                 um.ifPresent(ingrediente::setUnidadMedida);
             }
 
@@ -49,17 +49,17 @@ public class IngredienteServiceImpl implements IngredienteService {
     }
 
     @Override
-    public ResponseEntity<String> update(Map<String, String> requestMap) {
+    public ResponseEntity<String> update(IngredienteRequest request) {
         try {
-            Optional<Ingrediente> optional = ingredienteDao.findById(Integer.parseInt(requestMap.get("id")));
+            Optional<Ingrediente> optional = ingredienteDao.findById(request.getId());
             if (optional.isPresent()) {
                 Ingrediente ingrediente = optional.get();
-                if (requestMap.containsKey("nombre")) ingrediente.setNombre(requestMap.get("nombre"));
-                if (requestMap.containsKey("costoUnitario")) ingrediente.setCostoUnitario(Double.parseDouble(requestMap.get("costoUnitario")));
-                if (requestMap.containsKey("activo")) ingrediente.setActivo(Boolean.parseBoolean(requestMap.get("activo")));
-                if (requestMap.containsKey("stockMinimo")) ingrediente.setStockMinimo(Double.parseDouble(requestMap.get("stockMinimo")));
-                if (requestMap.containsKey("unidadMedidaId")) {
-                    Optional<UnidadMedida> um = unidadMedidaDao.findById(Integer.parseInt(requestMap.get("unidadMedidaId")));
+                if (request.getNombre() != null) ingrediente.setNombre(request.getNombre());
+                if (request.getCostoUnitario() != null) ingrediente.setCostoUnitario(request.getCostoUnitario());
+                if (request.getActivo() != null) ingrediente.setActivo(request.getActivo());
+                if (request.getStockMinimo() != null) ingrediente.setStockMinimo(request.getStockMinimo());
+                if (request.getUnidadMedidaId() != null) {
+                    Optional<UnidadMedida> um = unidadMedidaDao.findById(request.getUnidadMedidaId());
                     um.ifPresent(ingrediente::setUnidadMedida);
                 }
                 ingredienteDao.save(ingrediente);
@@ -93,7 +93,7 @@ public class IngredienteServiceImpl implements IngredienteService {
             if (optional.isPresent()) {
                 return new ResponseEntity<>(optional.get(), HttpStatus.OK);
             }
-            return new ResponseEntity<>(new Ingrediente(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.notFound().build();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
