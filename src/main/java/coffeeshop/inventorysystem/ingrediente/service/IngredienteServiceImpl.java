@@ -28,7 +28,9 @@ public class IngredienteServiceImpl implements IngredienteService {
 
     @Override
     public ResponseEntity<String> create(IngredienteRequest request) {
+
         try {
+
             Ingrediente ingrediente = new Ingrediente();
             ingrediente.setNombre(request.getNombre());
             ingrediente.setCostoUnitario(request.getCostoUnitario());
@@ -36,12 +38,17 @@ public class IngredienteServiceImpl implements IngredienteService {
             ingrediente.setStockMinimo(request.getStockMinimo());
 
             if (request.getUnidadMedidaId() != null) {
-                Optional<UnidadMedida> um = unidadMedidaDao.findById(request.getUnidadMedidaId());
-                um.ifPresent(ingrediente::setUnidadMedida);
+                Optional<UnidadMedida> optionalUnidad = unidadMedidaDao.findById(request.getUnidadMedidaId());
+
+                if (optionalUnidad.isEmpty()) {
+                    return CafeUtils.getResponseEntity("La unidad de medida no existe.", HttpStatus.BAD_REQUEST);
+                }
+                ingrediente.setUnidadMedida(optionalUnidad.get());
             }
 
             ingredienteDao.save(ingrediente);
             return CafeUtils.getResponseEntity("Ingrediente creado exitosamente.", HttpStatus.OK);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -52,6 +59,7 @@ public class IngredienteServiceImpl implements IngredienteService {
     public ResponseEntity<String> update(IngredienteRequest request) {
         try {
             Optional<Ingrediente> optional = ingredienteDao.findById(request.getId());
+
             if (optional.isPresent()) {
                 Ingrediente ingrediente = optional.get();
                 if (request.getNombre() != null) ingrediente.setNombre(request.getNombre());
@@ -60,6 +68,13 @@ public class IngredienteServiceImpl implements IngredienteService {
                 if (request.getStockMinimo() != null) ingrediente.setStockMinimo(request.getStockMinimo());
                 if (request.getUnidadMedidaId() != null) {
                     Optional<UnidadMedida> um = unidadMedidaDao.findById(request.getUnidadMedidaId());
+
+                    if (um.isEmpty()) {
+                        return CafeUtils.getResponseEntity(
+                                "La unidad de medida no existe.",
+                                HttpStatus.BAD_REQUEST
+                        );
+                    }
                     um.ifPresent(ingrediente::setUnidadMedida);
                 }
                 ingredienteDao.save(ingrediente);

@@ -8,6 +8,7 @@ import coffeeshop.inventorysystem.kardex.service.KardexService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class KardexRestImpl implements KardexRest {
     private final KardexService kardexService;
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> registrarEntrada(MovimientoRequest request) {
         try {
             return kardexService.registrarEntrada(request);
@@ -30,6 +32,7 @@ public class KardexRestImpl implements KardexRest {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> registrarSalida(MovimientoRequest request) {
         try {
             return kardexService.registrarSalida(request);

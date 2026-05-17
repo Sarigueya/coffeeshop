@@ -2,11 +2,16 @@ package coffeeshop.inventorysystem.producto.service;
 
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
+import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
 import coffeeshop.inventorysystem.producto.dto.ProductoRequest;
+import coffeeshop.inventorysystem.producto.dto.RecetaDetalleRequest;
 import coffeeshop.inventorysystem.producto.model.Producto;
 import coffeeshop.inventorysystem.producto.model.Receta;
+import coffeeshop.inventorysystem.producto.model.RecetaDetalle;
 import coffeeshop.inventorysystem.producto.repository.ProductoDao;
 import coffeeshop.inventorysystem.producto.repository.RecetaDao;
+import coffeeshop.inventorysystem.producto.repository.RecetaDetalleDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,6 +31,10 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final RecetaDao recetaDao;
 
+    private final RecetaDetalleDao recetaDetalleDao;
+
+    private final IngredienteDao ingredienteDao;
+
     @Override
     public ResponseEntity<String> create(ProductoRequest request) {
         try {
@@ -35,9 +44,35 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setPrecioVenta(request.getPrecioVenta());
             producto.setActivo(true);
 
-            if (request.getRecetaId() != null) {
-                Optional<Receta> receta = recetaDao.findById(request.getRecetaId());
-                receta.ifPresent(producto::setReceta);
+            if (request.getRecetaDetalles() != null && !request.getRecetaDetalles().isEmpty()) {
+                List<Integer> idsNoExistentes = request.getRecetaDetalles().stream()
+                        .map(RecetaDetalleRequest::getIngredienteId)
+                        .filter(id -> !ingredienteDao.existsById(id))
+                        .toList();
+
+                if (!idsNoExistentes.isEmpty()) {
+                    return CafeUtils.getResponseEntity(
+                            "Los siguientes ingredientes no existen: " + idsNoExistentes,
+                            HttpStatus.BAD_REQUEST
+                    );
+                }
+
+                Receta receta = new Receta();
+                receta.setNombre(request.getNombre());
+                receta.setDescripcion("Receta para " + request.getNombre());
+                receta.setActivo(true);
+                receta = recetaDao.save(receta);
+
+                for (RecetaDetalleRequest detalleReq : request.getRecetaDetalles()) {
+                    Ingrediente ingrediente = ingredienteDao.findById(detalleReq.getIngredienteId()).get();
+                    RecetaDetalle detalle = new RecetaDetalle();
+                    detalle.setReceta(receta);
+                    detalle.setIngrediente(ingrediente);
+                    detalle.setCantidadRequerida(detalleReq.getCantidadRequerida());
+                    recetaDetalleDao.save(detalle);
+                }
+
+                producto.setReceta(receta);
             }
 
             productoDao.save(producto);
@@ -58,10 +93,46 @@ public class ProductoServiceImpl implements ProductoService {
                 if (request.getDescripcion() != null) producto.setDescripcion(request.getDescripcion());
                 if (request.getPrecioVenta() != null) producto.setPrecioVenta(request.getPrecioVenta());
                 if (request.getActivo() != null) producto.setActivo(request.getActivo());
-                if (request.getRecetaId() != null) {
-                    Optional<Receta> receta = recetaDao.findById(request.getRecetaId());
-                    receta.ifPresent(producto::setReceta);
+
+                if (request.getRecetaDetalles() != null) {
+                    if (!request.getRecetaDetalles().isEmpty()) {
+                        List<Integer> idsNoExistentes = request.getRecetaDetalles().stream()
+                                .map(RecetaDetalleRequest::getIngredienteId)
+                                .filter(id -> !ingredienteDao.existsById(id))
+                                .toList();
+
+                        if (!idsNoExistentes.isEmpty()) {
+                            return CafeUtils.getResponseEntity(
+                                    "Los siguientes ingredientes no existen: " + idsNoExistentes,
+                                    HttpStatus.BAD_REQUEST
+                            );
+                        }
+                    }
+
+                    Receta receta = producto.getReceta();
+                    if (receta == null) {
+                        receta = new Receta();
+                        receta.setNombre(request.getNombre() != null ? request.getNombre() : producto.getNombre());
+                        receta.setDescripcion("Receta para " + (request.getNombre() != null ? request.getNombre() : producto.getNombre()));
+                        receta.setActivo(true);
+                        receta = recetaDao.save(receta);
+                    } else {
+                        recetaDetalleDao.findByRecetaId(receta.getId())
+                                .forEach(rd -> recetaDetalleDao.delete(rd));
+                    }
+
+                    for (RecetaDetalleRequest detalleReq : request.getRecetaDetalles()) {
+                        Ingrediente ingrediente = ingredienteDao.findById(detalleReq.getIngredienteId()).get();
+                        RecetaDetalle detalle = new RecetaDetalle();
+                        detalle.setReceta(receta);
+                        detalle.setIngrediente(ingrediente);
+                        detalle.setCantidadRequerida(detalleReq.getCantidadRequerida());
+                        recetaDetalleDao.save(detalle);
+                    }
+
+                    producto.setReceta(receta);
                 }
+
                 productoDao.save(producto);
                 return CafeUtils.getResponseEntity("Producto actualizado exitosamente.", HttpStatus.OK);
             }
@@ -93,7 +164,7 @@ public class ProductoServiceImpl implements ProductoService {
             if (optional.isPresent()) {
                 return new ResponseEntity<>(optional.get(), HttpStatus.OK);
             }
-            return new ResponseEntity<>(new Producto(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.notFound().build();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -8,6 +8,7 @@ import coffeeshop.inventorysystem.producto.service.ProductoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class ProductoRestImpl implements ProductoRest {
     private final ProductoService productoService;
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> create(ProductoRequest request) {
         try {
             return productoService.create(request);
@@ -30,6 +32,7 @@ public class ProductoRestImpl implements ProductoRest {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> update(ProductoRequest request) {
         try {
             return productoService.update(request);
@@ -40,6 +43,7 @@ public class ProductoRestImpl implements ProductoRest {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(Integer id) {
         try {
             return productoService.delete(id);

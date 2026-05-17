@@ -121,14 +121,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<List<UserWrapper>> getALLUser() {
         try {
-            if (jwtFilter.isAdmin()) {
-                return new ResponseEntity<>(userDao.getALLUser(), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(
-                        new ArrayList<>(),
-                        HttpStatus.UNAUTHORIZED
-                );
-            }
+            return new ResponseEntity<>(userDao.getALLUser(), HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -141,34 +134,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<String> update(UpdateUserRequest request) {
         try {
-            if (jwtFilter.isAdmin()) {
-                Optional<User> optional = userDao.findById(request.getId());
-                if (!optional.isEmpty()) {
-                    userDao.updateStatus(
-                            request.getStatus(),
-                            request.getId()
-                    );
-                    sendMailToAllAdmin(
-                            request.getStatus(),
-                            optional.get().getEmail(),
-                            userDao.getAllAdmin()
-                    );
-                    return CafeUtils.getResponseEntity(
-                            "User Status Updated Successfully",
-                            HttpStatus.OK
-                    );
-
-                } else {
-                    return CafeUtils.getResponseEntity(
-                            "User id does not exist",
-                            HttpStatus.OK
-                    );
-                }
+            Optional<User> optional = userDao.findById(request.getId());
+            if (!optional.isEmpty()) {
+                userDao.updateStatus(
+                        request.getStatus(),
+                        request.getId()
+                );
+                sendMailToAllAdmin(
+                        request.getStatus(),
+                        optional.get().getEmail(),
+                        userDao.getAllAdmin()
+                );
+                return CafeUtils.getResponseEntity(
+                        "User Status Updated Successfully",
+                        HttpStatus.OK
+                );
 
             } else {
                 return CafeUtils.getResponseEntity(
-                        CafeConstants.UNAUTHORIZED_ACCESS,
-                        HttpStatus.UNAUTHORIZED
+                        "User id does not exist",
+                        HttpStatus.OK
                 );
             }
 

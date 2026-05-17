@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ProductoRequest {
 
@@ -19,5 +21,5 @@ public class ProductoRequest {
 
     private Boolean activo;
 
-    private Integer recetaId;
+    private List<RecetaDetalleRequest> recetaDetalles;
 }
