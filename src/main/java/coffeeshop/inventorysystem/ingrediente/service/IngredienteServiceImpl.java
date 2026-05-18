@@ -7,6 +7,7 @@ import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
 import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
 import coffeeshop.inventorysystem.ingrediente.repository.UnidadMedidaDao;
+import coffeeshop.inventorysystem.kardex.repository.KardexDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,8 @@ public class IngredienteServiceImpl implements IngredienteService {
     private final IngredienteDao ingredienteDao;
 
     private final UnidadMedidaDao unidadMedidaDao;
+
+    private final KardexDao kardexDao;
 
     @Override
     public ResponseEntity<String> create(IngredienteRequest request) {
@@ -91,8 +94,18 @@ public class IngredienteServiceImpl implements IngredienteService {
     public ResponseEntity<String> delete(Integer id) {
         try {
             if (ingredienteDao.existsById(id)) {
-                ingredienteDao.deleteById(id);
-                return CafeUtils.getResponseEntity("Ingrediente eliminado exitosamente.", HttpStatus.OK);
+                if (kardexDao.findByIngredienteId(id).isEmpty()) {
+                    ingredienteDao.deleteById(id);
+                    return CafeUtils.getResponseEntity("Ingrediente eliminado exitosamente.", HttpStatus.OK);
+                } else {
+                    Ingrediente ingrediente = ingredienteDao.findById(id).get();
+                    ingrediente.setActivo(false);
+                    ingredienteDao.save(ingrediente);
+                    return CafeUtils.getResponseEntity(
+                            "Ingrediente desactivado (tiene movimientos asociados).",
+                            HttpStatus.OK
+                    );
+                }
             }
             return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
