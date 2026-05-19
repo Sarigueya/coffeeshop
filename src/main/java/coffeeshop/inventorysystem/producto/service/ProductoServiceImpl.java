@@ -14,6 +14,8 @@ import coffeeshop.inventorysystem.producto.repository.RecetaDao;
 import coffeeshop.inventorysystem.producto.repository.RecetaDetalleDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,8 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final IngredienteDao ingredienteDao;
 
+    private final MessageSource messageSource;
+
     @Override
     public ResponseEntity<String> create(ProductoRequest request) {
         try {
@@ -52,14 +56,16 @@ public class ProductoServiceImpl implements ProductoService {
 
                 if (!idsNoExistentes.isEmpty()) {
                     return CafeUtils.getResponseEntity(
-                            "Los siguientes ingredientes no existen: " + idsNoExistentes,
+                            messageSource.getMessage("producto.ingredients.not.found",
+                                    new Object[]{idsNoExistentes.toString()}, LocaleContextHolder.getLocale()),
                             HttpStatus.BAD_REQUEST
                     );
                 }
 
                 Receta receta = new Receta();
                 receta.setNombre(request.getNombre());
-                receta.setDescripcion("Receta para " + request.getNombre());
+                receta.setDescripcion(messageSource.getMessage("producto.recipe.description",
+                        new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()));
                 receta.setActivo(true);
                 receta = recetaDao.save(receta);
 
@@ -76,7 +82,9 @@ public class ProductoServiceImpl implements ProductoService {
             }
 
             productoDao.save(producto);
-            return CafeUtils.getResponseEntity("Producto creado exitosamente.", HttpStatus.OK);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("producto.created", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -103,7 +111,8 @@ public class ProductoServiceImpl implements ProductoService {
 
                         if (!idsNoExistentes.isEmpty()) {
                             return CafeUtils.getResponseEntity(
-                                    "Los siguientes ingredientes no existen: " + idsNoExistentes,
+                                    messageSource.getMessage("producto.ingredients.not.found",
+                                            new Object[]{idsNoExistentes.toString()}, LocaleContextHolder.getLocale()),
                                     HttpStatus.BAD_REQUEST
                             );
                         }
@@ -112,8 +121,10 @@ public class ProductoServiceImpl implements ProductoService {
                     Receta receta = producto.getReceta();
                     if (receta == null) {
                         receta = new Receta();
-                        receta.setNombre(request.getNombre() != null ? request.getNombre() : producto.getNombre());
-                        receta.setDescripcion("Receta para " + (request.getNombre() != null ? request.getNombre() : producto.getNombre()));
+                        String nombre = request.getNombre() != null ? request.getNombre() : producto.getNombre();
+                        receta.setNombre(nombre);
+                        receta.setDescripcion(messageSource.getMessage("producto.recipe.description",
+                                new Object[]{nombre}, LocaleContextHolder.getLocale()));
                         receta.setActivo(true);
                         receta = recetaDao.save(receta);
                     } else {
@@ -134,9 +145,13 @@ public class ProductoServiceImpl implements ProductoService {
                 }
 
                 productoDao.save(producto);
-                return CafeUtils.getResponseEntity("Producto actualizado exitosamente.", HttpStatus.OK);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("producto.updated", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.OK);
             }
-            return CafeUtils.getResponseEntity("Producto no encontrado.", HttpStatus.BAD_REQUEST);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("producto.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -148,9 +163,13 @@ public class ProductoServiceImpl implements ProductoService {
         try {
             if (productoDao.existsById(id)) {
                 productoDao.deleteById(id);
-                return CafeUtils.getResponseEntity("Producto eliminado exitosamente.", HttpStatus.OK);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("producto.deleted", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.OK);
             }
-            return CafeUtils.getResponseEntity("Producto no encontrado.", HttpStatus.BAD_REQUEST);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("producto.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

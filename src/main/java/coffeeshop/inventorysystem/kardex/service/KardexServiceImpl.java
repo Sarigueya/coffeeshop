@@ -20,6 +20,8 @@ import coffeeshop.inventorysystem.producto.repository.RecetaDetalleDao;
 import coffeeshop.inventorysystem.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,8 @@ public class KardexServiceImpl implements KardexService {
 
     private final JwtFilter jwtFilter;
 
+    private final MessageSource messageSource;
+
     private Double obtenerSaldoActual(Integer ingredienteId) {
         List<Kardex> historial = kardexDao.findByIngredienteId(ingredienteId);
         if (historial.isEmpty()) return 0.0;
@@ -61,10 +65,14 @@ public class KardexServiceImpl implements KardexService {
             Optional<Movimiento> movimientoOpt = movimientoDao.findByNombreMovimiento("Compra");
 
             if (ingredienteOpt.isEmpty()) {
-                return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.ingredient.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
             if (movimientoOpt.isEmpty()) {
-                return CafeUtils.getResponseEntity("Movimiento no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.movement.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
             Double saldoAnterior = obtenerSaldoActual(request.getIngredienteId());
@@ -72,7 +80,9 @@ public class KardexServiceImpl implements KardexService {
 
             User user = userDao.findByEmailId(jwtFilter.getCurrentUser());
             if (user == null) {
-                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.UNAUTHORIZED);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.user.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.UNAUTHORIZED);
             }
 
             Kardex kardex = new Kardex();
@@ -85,7 +95,9 @@ public class KardexServiceImpl implements KardexService {
             kardex.setFecha(LocalDateTime.now());
 
             kardexDao.save(kardex);
-            return CafeUtils.getResponseEntity("Entrada registrada exitosamente.", HttpStatus.OK);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("kardex.entrada.success", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -99,23 +111,31 @@ public class KardexServiceImpl implements KardexService {
             Optional<Movimiento> movimientoOpt = movimientoDao.findByNombreMovimiento("Daño");
 
             if (ingredienteOpt.isEmpty()) {
-                return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.ingredient.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
             if (movimientoOpt.isEmpty()) {
-                return CafeUtils.getResponseEntity("Movimiento no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.movement.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
             Double saldoAnterior = obtenerSaldoActual(request.getIngredienteId());
 
             if (saldoAnterior < request.getCantidad()) {
-                return CafeUtils.getResponseEntity("Stock insuficiente.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.stock.insufficient", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
             Double saldoNuevo = saldoAnterior - request.getCantidad();
 
             User user = userDao.findByEmailId(jwtFilter.getCurrentUser());
             if (user == null) {
-                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.UNAUTHORIZED);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.user.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.UNAUTHORIZED);
             }
 
             Kardex kardex = new Kardex();
@@ -130,10 +150,11 @@ public class KardexServiceImpl implements KardexService {
             kardexDao.save(kardex);
 
             Ingrediente ingrediente = ingredienteOpt.get();
-            String mensaje = "Salida registrada exitosamente.";
+            String mensaje = messageSource.getMessage("kardex.salida.success", null, LocaleContextHolder.getLocale());
             if (saldoNuevo < ingrediente.getStockMinimo()) {
-                mensaje += " Stock bajo de '" + ingrediente.getNombre()
-                        + "' (actual: " + saldoNuevo + ", mínimo: " + ingrediente.getStockMinimo() + ")";
+                mensaje += messageSource.getMessage("kardex.salida.low.stock",
+                        new Object[]{ingrediente.getNombre(), saldoNuevo, ingrediente.getStockMinimo()},
+                        LocaleContextHolder.getLocale());
             }
 
             return CafeUtils.getResponseEntity(mensaje, HttpStatus.OK);
@@ -148,15 +169,21 @@ public class KardexServiceImpl implements KardexService {
         try {
             Optional<Producto> productoOpt = productoDao.findById(request.getProductoId());
             if (productoOpt.isEmpty()) {
-                return CafeUtils.getResponseEntity("Producto no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.product.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
             if (productoOpt.get().getReceta() == null) {
-                return CafeUtils.getResponseEntity("El producto no tiene una receta asociada.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.product.no.recipe", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
             Optional<Movimiento> movimientoOpt = movimientoDao.findByNombreMovimiento("Venta");
             if (movimientoOpt.isEmpty()) {
-                return CafeUtils.getResponseEntity("Movimiento no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.movement.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
             List<RecetaDetalle> detalles = recetaDetalleDao.findByRecetaId(
@@ -164,34 +191,40 @@ public class KardexServiceImpl implements KardexService {
             );
 
             if (detalles.isEmpty()) {
-                return CafeUtils.getResponseEntity("La receta del producto no tiene ingredientes.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.recipe.no.ingredients", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
+            var locale = LocaleContextHolder.getLocale();
             List<String> erroresStock = new ArrayList<>();
             for (RecetaDetalle detalle : detalles) {
                 Double necesario = request.getCantidad() * detalle.getCantidadRequerida();
                 Double saldoActual = obtenerSaldoActual(detalle.getIngrediente().getId());
                 Double saldoFinal = saldoActual - necesario;
                 if (saldoActual < necesario) {
-                    erroresStock.add("Stock insuficiente de '" + detalle.getIngrediente().getNombre()
-                            + "' (necesario: " + necesario + ", disponible: " + saldoActual + ")");
+                    erroresStock.add(messageSource.getMessage("kardex.stock.insufficient.detail",
+                            new Object[]{detalle.getIngrediente().getNombre(), necesario, saldoActual}, locale));
                 } else if (saldoFinal < detalle.getIngrediente().getStockMinimo()) {
-                    erroresStock.add("La venta dejaría el stock de '" + detalle.getIngrediente().getNombre()
-                            + "' por debajo del mínimo (" + saldoFinal + " < "
-                            + detalle.getIngrediente().getStockMinimo() + ")");
+                    erroresStock.add(messageSource.getMessage("kardex.stock.below.minimum",
+                            new Object[]{detalle.getIngrediente().getNombre(), saldoFinal,
+                                    detalle.getIngrediente().getStockMinimo()}, locale));
                 }
             }
 
             if (!erroresStock.isEmpty()) {
                 return CafeUtils.getResponseEntity(
-                        "No se puede realizar la venta:\n" + String.join("\n", erroresStock),
+                        messageSource.getMessage("kardex.sale.impossible", null, LocaleContextHolder.getLocale())
+                                + "\n" + String.join("\n", erroresStock),
                         HttpStatus.BAD_REQUEST
                 );
             }
 
             User user = userDao.findByEmailId(jwtFilter.getCurrentUser());
             if (user == null) {
-                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.UNAUTHORIZED);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("kardex.user.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.UNAUTHORIZED);
             }
 
             for (RecetaDetalle detalle : detalles) {
@@ -211,7 +244,9 @@ public class KardexServiceImpl implements KardexService {
                 kardexDao.save(kardex);
             }
 
-            return CafeUtils.getResponseEntity("Venta registrada exitosamente.", HttpStatus.OK);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("kardex.venta.success", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -10,6 +10,8 @@ import coffeeshop.inventorysystem.ingrediente.repository.UnidadMedidaDao;
 import coffeeshop.inventorysystem.kardex.repository.KardexDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,8 @@ public class IngredienteServiceImpl implements IngredienteService {
 
     private final KardexDao kardexDao;
 
+    private final MessageSource messageSource;
+
     @Override
     public ResponseEntity<String> create(IngredienteRequest request) {
 
@@ -44,13 +48,17 @@ public class IngredienteServiceImpl implements IngredienteService {
                 Optional<UnidadMedida> optionalUnidad = unidadMedidaDao.findById(request.getUnidadMedidaId());
 
                 if (optionalUnidad.isEmpty()) {
-                    return CafeUtils.getResponseEntity("La unidad de medida no existe.", HttpStatus.BAD_REQUEST);
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("ingrediente.unit.not.found", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.BAD_REQUEST);
                 }
                 ingrediente.setUnidadMedida(optionalUnidad.get());
             }
 
             ingredienteDao.save(ingrediente);
-            return CafeUtils.getResponseEntity("Ingrediente creado exitosamente.", HttpStatus.OK);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("ingrediente.created", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.OK);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -74,16 +82,20 @@ public class IngredienteServiceImpl implements IngredienteService {
 
                     if (um.isEmpty()) {
                         return CafeUtils.getResponseEntity(
-                                "La unidad de medida no existe.",
+                                messageSource.getMessage("ingrediente.unit.not.found", null, LocaleContextHolder.getLocale()),
                                 HttpStatus.BAD_REQUEST
                         );
                     }
                     um.ifPresent(ingrediente::setUnidadMedida);
                 }
                 ingredienteDao.save(ingrediente);
-                return CafeUtils.getResponseEntity("Ingrediente actualizado exitosamente.", HttpStatus.OK);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("ingrediente.updated", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.OK);
             }
-            return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("ingrediente.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -96,18 +108,22 @@ public class IngredienteServiceImpl implements IngredienteService {
             if (ingredienteDao.existsById(id)) {
                 if (kardexDao.findByIngredienteId(id).isEmpty()) {
                     ingredienteDao.deleteById(id);
-                    return CafeUtils.getResponseEntity("Ingrediente eliminado exitosamente.", HttpStatus.OK);
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("ingrediente.deleted", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.OK);
                 } else {
                     Ingrediente ingrediente = ingredienteDao.findById(id).get();
                     ingrediente.setActivo(false);
                     ingredienteDao.save(ingrediente);
                     return CafeUtils.getResponseEntity(
-                            "Ingrediente desactivado (tiene movimientos asociados).",
+                            messageSource.getMessage("ingrediente.deactivated", null, LocaleContextHolder.getLocale()),
                             HttpStatus.OK
                     );
                 }
             }
-            return CafeUtils.getResponseEntity("Ingrediente no encontrado.", HttpStatus.BAD_REQUEST);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("ingrediente.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

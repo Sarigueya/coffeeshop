@@ -15,6 +15,8 @@ import coffeeshop.inventorysystem.auth.service.AuditService;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +48,8 @@ public class UserServiceImpl implements UserService {
 
     private final AuditService auditService;
 
+    private final MessageSource messageSource;
+
     @Override
     public ResponseEntity<String> signUp(SignupRequest request) {
         log.info("Inside signup {}", request);
@@ -56,12 +60,18 @@ public class UserServiceImpl implements UserService {
                 if (Objects.isNull(user)) {
                     User nuevo = userDao.save(getUserFromMap(request));
                     auditService.log(nuevo, "SIGNUP", "Usuario registrado: " + nuevo.getEmail());
-                    return CafeUtils.getResponseEntity("Successfully Registered.", HttpStatus.OK);
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("user.registered", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.OK);
                 } else {
-                    return CafeUtils.getResponseEntity("Email already exits.", HttpStatus.BAD_REQUEST);
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("user.email.exists", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.BAD_REQUEST);
                 }
             } else {
-                return CafeUtils.getResponseEntity(CafeConstants.INVALID_DATA, HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("common.invalid.data", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -119,9 +129,10 @@ public class UserServiceImpl implements UserService {
                                     ) + "\"}",
                             HttpStatus.OK);
                 } else {
-
                     return new ResponseEntity<String>(
-                            "{\"message\":\"" + "Wait for admin approval." + "\"}",
+                            "{\"message\":\"" +
+                                    messageSource.getMessage("user.login.wait.approval", null, LocaleContextHolder.getLocale())
+                                    + "\"}",
                             HttpStatus.BAD_REQUEST);
                 }
             }
@@ -130,7 +141,9 @@ public class UserServiceImpl implements UserService {
             log.error("{}", ex);
         }
         return new ResponseEntity<String>(
-                "{\"message\":\"" + "Bad Credentials." + "\"}",
+                "{\"message\":\"" +
+                        messageSource.getMessage("user.login.bad.credentials", null, LocaleContextHolder.getLocale())
+                        + "\"}",
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -155,7 +168,7 @@ public class UserServiceImpl implements UserService {
             if (!optional.isEmpty()) {
                 if (esAdmin(optional.get())) {
                     return CafeUtils.getResponseEntity(
-                            "No puedes modificar a otro administrador.",
+                            messageSource.getMessage("user.cannot.modify.admin", null, LocaleContextHolder.getLocale()),
                             HttpStatus.FORBIDDEN
                     );
                 }
@@ -173,13 +186,13 @@ public class UserServiceImpl implements UserService {
                         userDao.getAllAdmin()
                 );
                 return CafeUtils.getResponseEntity(
-                        "User Status Updated Successfully",
+                        messageSource.getMessage("user.status.updated", null, LocaleContextHolder.getLocale()),
                         HttpStatus.OK
                 );
 
             } else {
                 return CafeUtils.getResponseEntity(
-                        "User id does not exist",
+                        messageSource.getMessage("user.id.not.exists", null, LocaleContextHolder.getLocale()),
                         HttpStatus.OK
                 );
             }
@@ -199,12 +212,14 @@ public class UserServiceImpl implements UserService {
         try {
             Optional<User> optional = userDao.findById(id);
             if (optional.isEmpty()) {
-                return CafeUtils.getResponseEntity("Usuario no encontrado.", HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
             }
 
             if (esAdmin(optional.get())) {
                 return CafeUtils.getResponseEntity(
-                        "El usuario ya es administrador.",
+                        messageSource.getMessage("user.already.admin", null, LocaleContextHolder.getLocale()),
                         HttpStatus.BAD_REQUEST
                 );
             }
@@ -218,7 +233,7 @@ public class UserServiceImpl implements UserService {
                     "Usuario " + id + " fue promovido a administrador.");
 
             return CafeUtils.getResponseEntity(
-                    "Usuario promovido a administrador exitosamente.",
+                    messageSource.getMessage("user.admin.promoted", null, LocaleContextHolder.getLocale()),
                     HttpStatus.OK
             );
         } catch (Exception ex) {
@@ -232,29 +247,30 @@ public class UserServiceImpl implements UserService {
     }
 
     private void sendMailToAllAdmin(String status, String user, List<String> allAdmin) {
+        var locale = LocaleContextHolder.getLocale();
 
         allAdmin.remove(jwtFilter.getCurrentUser());
 
         if (status != null && status.equalsIgnoreCase("true")) {
             emailUtils.sendSimpleMessage(
                     jwtFilter.getCurrentUser(),
-                    "Account Approved",
-                    "USER:- " + user + "\n is approved by \nADMIN:-"
-                            + jwtFilter.getCurrentUser(),
+                    messageSource.getMessage("email.subject.approved", null, locale),
+                    messageSource.getMessage("email.body.approved.admin", new Object[]{user, jwtFilter.getCurrentUser()}, locale),
                     allAdmin
             );
-            sendMailToUser(user, "Account Approved",
-                    "Congratulations! Your account has been approved. You can now log in.");
+            sendMailToUser(user,
+                    messageSource.getMessage("email.subject.approved", null, locale),
+                    messageSource.getMessage("email.body.approved.user", null, locale));
         } else {
             emailUtils.sendSimpleMessage(
                     jwtFilter.getCurrentUser(),
-                    "Account Disabled",
-                    "USER:- " + user + "\n is disabled by \nADMIN:-"
-                            + jwtFilter.getCurrentUser(),
+                    messageSource.getMessage("email.subject.disabled", null, locale),
+                    messageSource.getMessage("email.body.disabled.admin", new Object[]{user, jwtFilter.getCurrentUser()}, locale),
                     allAdmin
             );
-            sendMailToUser(user, "Account Disabled",
-                    "Your account has been disabled. Please contact an administrator.");
+            sendMailToUser(user,
+                    messageSource.getMessage("email.subject.disabled", null, locale),
+                    messageSource.getMessage("email.body.disabled.user", null, locale));
         }
     }
 
@@ -280,13 +296,13 @@ public class UserServiceImpl implements UserService {
                     auditService.log(userObj, "PASSWORD_CHANGE", "Contraseña actualizada");
 
                     return CafeUtils.getResponseEntity(
-                            "Password Updated Successfully",
+                            messageSource.getMessage("user.password.updated", null, LocaleContextHolder.getLocale()),
                             HttpStatus.OK
                     );
                 }
 
                 return CafeUtils.getResponseEntity(
-                        "Incorrect Old Password",
+                        messageSource.getMessage("user.password.incorrect.old", null, LocaleContextHolder.getLocale()),
                         HttpStatus.BAD_REQUEST
                 );
             }
@@ -318,12 +334,12 @@ public class UserServiceImpl implements UserService {
 
                 emailUtils.forgotMail(
                         user.getEmail(),
-                        "Credentials by Inventory Management System",
+                        messageSource.getMessage("email.subject.forgot", null, LocaleContextHolder.getLocale()),
                         tempPassword
                 );
             }
             return CafeUtils.getResponseEntity(
-                    "Check your mail for Credentials.",
+                    messageSource.getMessage("user.check.mail", null, LocaleContextHolder.getLocale()),
                     HttpStatus.OK
             );
 

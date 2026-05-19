@@ -7,6 +7,8 @@ import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
 import coffeeshop.inventorysystem.ingrediente.repository.UnidadMedidaDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,17 @@ public class UnidadMedidaServiceImpl implements UnidadMedidaService {
 
     private final UnidadMedidaDao unidadMedidaDao;
 
+    private final MessageSource messageSource;
+
     @Override
     public ResponseEntity<String> create(UnidadMedidaRequest request) {
         try {
             UnidadMedida um = new UnidadMedida();
             um.setNombreUnidad(request.getNombreUnidad());
             unidadMedidaDao.save(um);
-            return CafeUtils.getResponseEntity("Unidad de medida creada exitosamente.", HttpStatus.OK);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("unidad.created", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -45,9 +51,13 @@ public class UnidadMedidaServiceImpl implements UnidadMedidaService {
                     um.setNombreUnidad(request.getNombreUnidad());
                 }
                 unidadMedidaDao.save(um);
-                return CafeUtils.getResponseEntity("Unidad de medida actualizada exitosamente.", HttpStatus.OK);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("unidad.updated", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.OK);
             }
-            return CafeUtils.getResponseEntity("Unidad de medida no encontrada.", HttpStatus.BAD_REQUEST);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("unidad.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -59,9 +69,13 @@ public class UnidadMedidaServiceImpl implements UnidadMedidaService {
         try {
             if (unidadMedidaDao.existsById(id)) {
                 unidadMedidaDao.deleteById(id);
-                return CafeUtils.getResponseEntity("Unidad de medida eliminada exitosamente.", HttpStatus.OK);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("unidad.deleted", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.OK);
             }
-            return CafeUtils.getResponseEntity("Unidad de medida no encontrada.", HttpStatus.BAD_REQUEST);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("unidad.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

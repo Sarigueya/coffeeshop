@@ -1,5 +1,6 @@
 package coffeeshop.inventorysystem.producto.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class RecetaDetalle implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "receta_id")
+    @JsonBackReference
     private Receta receta;
 
     @ManyToOne

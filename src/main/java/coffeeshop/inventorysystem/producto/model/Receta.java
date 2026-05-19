@@ -1,11 +1,13 @@
 package coffeeshop.inventorysystem.producto.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "receta")
@@ -29,4 +31,8 @@ public class Receta implements Serializable {
 
     @Column(name = "activo")
     private Boolean activo;
+
+    @OneToMany(mappedBy = "receta", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<RecetaDetalle> detalles;
 }
