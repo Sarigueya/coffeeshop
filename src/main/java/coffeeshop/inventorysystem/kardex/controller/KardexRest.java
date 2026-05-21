@@ -59,4 +59,9 @@ public interface KardexRest {
     @Operation(summary = "Obtener saldos", description = "Retorna el saldo actual de cada ingrediente en el inventario.")
     @ApiResponse(responseCode = "200", description = "Lista de saldos por ingrediente")
     ResponseEntity<List<KardexSaldoResponse>> getSaldos();
+
+    @GetMapping(path = "/reporte/pdf", produces = "application/pdf")
+    @Operation(summary = "Descargar reporte kardex PDF")
+    @ApiResponse(responseCode = "200", description = "PDF con todos los movimientos de kardex")
+    ResponseEntity<byte[]> descargarReportePdf();
 }

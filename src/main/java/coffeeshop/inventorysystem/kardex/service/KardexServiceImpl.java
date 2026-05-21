@@ -20,14 +20,26 @@ import coffeeshop.inventorysystem.producto.repository.RecetaDetalleDao;
 import coffeeshop.inventorysystem.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +63,8 @@ public class KardexServiceImpl implements KardexService {
     private final JwtFilter jwtFilter;
 
     private final MessageSource messageSource;
+
+    private final DataSource dataSource;
 
     private Double obtenerSaldoActual(Integer ingredienteId) {
         List<Kardex> historial = kardexDao.findByIngredienteId(ingredienteId);
@@ -287,5 +301,29 @@ public class KardexServiceImpl implements KardexService {
             ex.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> generarReportePdf() {
+        try {
+            ClassPathResource resource = new ClassPathResource("rpt_kardex_insumos_empleados.jrxml");
+            JasperReport jasperReport = JasperCompileManager.compileReport(resource.getInputStream());
+
+            try (Connection connection = dataSource.getConnection()) {
+                JasperPrint jasperPrint = JasperFillManager.fillReport(
+                        jasperReport, new HashMap<>(), connection);
+                byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDisposition(
+                        ContentDisposition.attachment().filename("kardex.pdf").build());
+
+                return ResponseEntity.ok().headers(headers).body(pdfBytes);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }

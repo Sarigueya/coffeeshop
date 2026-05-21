@@ -21,4 +21,6 @@ public interface KardexService {
     ResponseEntity<List<Kardex>> getAll();
 
     ResponseEntity<List<KardexSaldoResponse>> getSaldos();
+
+    ResponseEntity<byte[]> generarReportePdf();
 }

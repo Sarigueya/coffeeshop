@@ -109,6 +109,19 @@
             <version>3.0.2</version>
         </dependency>
 
+        <!-- JasperReports -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.21.4</version>
+        </dependency>
+
+        <!-- Groovy (lenguaje de expresiones en JRXML) -->
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+        </dependency>
+
         <!-- Utilidades Google -->
         <dependency>
             <groupId>com.google.guava</groupId>

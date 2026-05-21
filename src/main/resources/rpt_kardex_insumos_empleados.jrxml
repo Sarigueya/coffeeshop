@@ -1,0 +1,435 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN"
+	"http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+		http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+	name="rpt_kardex_insumos_empleados"
+	language="groovy"
+	pageWidth="1050"
+	pageHeight="595"
+	orientation="Landscape"
+	columnWidth="1010"
+	leftMargin="20"
+	rightMargin="20"
+	topMargin="20"
+	bottomMargin="20"
+	uuid="5c220d8d-501d-4acd-9e8f-caebe9e12541">
+
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter.jrdax"/>
+
+	<style name="ColumnHeader" fontName="Arial" fontSize="9" isBold="true" forecolor="#FFFFFF" backcolor="#1A1A2E" mode="Opaque"/>
+	<style name="SummaryLabel" fontName="Arial" fontSize="9" isBold="true" forecolor="#1A1A2E"/>
+
+	<queryString language="SQL"><![CDATA[SELECT
+		k.id,
+		i.nombre            AS ingrediente,
+		um.nombre_unidad    AS unidad,
+		m.nombre_movimiento AS movimiento,
+		tm.operacion        AS tipo,
+		k.cantidad,
+		k.saldo_anterior,
+		k.saldo_nuevo,
+		k.fecha,
+		u.name              AS usuario,
+		u.email             AS email
+	FROM kardex k
+	JOIN ingrediente     i  ON i.id  = k.ingrediente_id
+	JOIN unidad_medida  um  ON um.id = i.unidad_medida_id
+	JOIN movimiento      m  ON m.id  = k.movimiento_id
+	JOIN tipo_movimiento tm  ON tm.id = m.tipo_movimiento_id
+	JOIN user            u  ON u.id  = k.usuario_id
+	ORDER BY i.nombre, k.fecha DESC]]></queryString>
+
+	<field name="id"             class="java.lang.Integer"/>
+	<field name="ingrediente"    class="java.lang.String"/>
+	<field name="unidad"         class="java.lang.String"/>
+	<field name="movimiento"     class="java.lang.String"/>
+	<field name="tipo"           class="java.lang.String"/>
+	<field name="cantidad"       class="java.lang.Double"/>
+	<field name="saldo_anterior" class="java.lang.Double"/>
+	<field name="saldo_nuevo"    class="java.lang.Double"/>
+	<field name="fecha"          class="java.sql.Timestamp"/>
+	<field name="usuario"        class="java.lang.String"/>
+	<field name="email"          class="java.lang.String"/>
+
+	<variable name="TOTAL_ENTRADAS" class="java.lang.Double" calculation="Sum" resetType="Report">
+		<variableExpression><![CDATA[$F{tipo}.equalsIgnoreCase("ENTRADA") ? $F{cantidad} : 0.0]]></variableExpression>
+		<initialValueExpression><![CDATA[0.0]]></initialValueExpression>
+	</variable>
+	<variable name="TOTAL_SALIDAS" class="java.lang.Double" calculation="Sum" resetType="Report">
+		<variableExpression><![CDATA[$F{tipo}.equalsIgnoreCase("SALIDA") ? $F{cantidad} : 0.0]]></variableExpression>
+		<initialValueExpression><![CDATA[0.0]]></initialValueExpression>
+	</variable>
+	<variable name="TOTAL_REGISTROS" class="java.lang.Integer" calculation="Count" resetType="Report">
+		<variableExpression><![CDATA[$F{id}]]></variableExpression>
+	</variable>
+
+	<group name="grupoIngrediente" isStartNewPage="false" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{ingrediente}]]></groupExpression>
+		<groupHeader>
+			<band height="18" splitType="Stretch">
+				<rectangle>
+					<reportElement x="0" y="0" width="1010" height="18" backcolor="#E8E5FF" forecolor="#E8E5FF" mode="Opaque"/>
+					<graphicElement><pen lineWidth="0.0"/></graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="6" y="2" width="60" height="14" forecolor="#534AB7"/>
+					<textElement><font fontName="Arial" size="9" isBold="true"/></textElement>
+					<text><![CDATA[Insumo:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="68" y="2" width="500" height="14" forecolor="#3C3489"/>
+					<textElement><font fontName="Arial" size="9" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$F{ingrediente} + "  (" + $F{unidad} + ")"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• TITLE â•â•â•â•â•â•â•â•â•â• -->
+	<title>
+		<band height="72" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="1010" height="72" backcolor="#1A1A2E" forecolor="#1A1A2E" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="0" width="5" height="72" backcolor="#5DCAA5" forecolor="#5DCAA5" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="18" y="10" width="280" height="26" forecolor="#FFFFFF"/>
+				<textElement><font fontName="Georgia" size="18" isBold="true"/></textElement>
+				<text><![CDATA[Cafe de Medianoche]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="18" y="38" width="280" height="14" forecolor="#9FE1CB"/>
+				<textElement><font fontName="Arial" size="9"/></textElement>
+				<text><![CDATA[Sistema de Gestion de Inventario]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="12" width="410" height="24" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Center"><font fontName="Georgia" size="16" isBold="true"/></textElement>
+				<text><![CDATA[Control de Movimientos de Inventario]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="38" width="410" height="14" forecolor="#AFA9EC"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="9"/></textElement>
+				<text><![CDATA[Kardex de Insumos - Registro de Entradas y Salidas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="800" y="18" width="60" height="12" forecolor="#9FE1CB"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8"/></textElement>
+				<text><![CDATA[Generado:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="862" y="18" width="140" height="12" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField pattern="HH:mm">
+				<reportElement x="862" y="32" width="140" height="12" forecolor="#9FE1CB"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• PAGE HEADER â•â•â•â•â•â•â•â•â•â• -->
+	<pageHeader>
+		<band height="14" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="13" width="1010" height="1" backcolor="#AFA9EC" forecolor="#AFA9EC" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+		</band>
+	</pageHeader>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• COLUMN HEADER â•â•â•â•â•â•â•â•â•â• -->
+	<columnHeader>
+		<band height="22" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="1010" height="22" backcolor="#1A1A2E" forecolor="#1A1A2E" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="2" y="4" width="30" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[#]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="34" y="4" width="90" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[FECHA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="126" y="4" width="130" height="14" style="ColumnHeader"/>
+				<textElement/>
+				<text><![CDATA[INSUMO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="258" y="4" width="52" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[UNIDAD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="312" y="4" width="120" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[MOVIMIENTO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="434" y="4" width="52" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[TIPO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="488" y="4" width="62" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[CANTIDAD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="552" y="4" width="64" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[SALDO ANT.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="618" y="4" width="64" height="14" style="ColumnHeader"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[SALDO NVO.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="684" y="4" width="80" height="14" style="ColumnHeader"/>
+				<textElement/>
+				<text><![CDATA[USUARIO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="766" y="4" width="240" height="14" style="ColumnHeader"/>
+				<textElement/>
+				<text><![CDATA[EMAIL]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• DETAIL â•â•â•â•â•â•â•â•â•â• -->
+	<detail>
+		<band height="16" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="1010" height="16" backcolor="#F8F7FF" forecolor="#F8F7FF" mode="Opaque">
+					<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+				</reportElement>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="15" width="1010" height="1" backcolor="#E8E5FF" forecolor="#E8E5FF" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+
+			<textField>
+				<reportElement x="2" y="2" width="30" height="12" forecolor="#888780"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+			</textField>
+
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="34" y="2" width="90" height="12" forecolor="#2C2C3A"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{fecha}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="126" y="2" width="130" height="12" forecolor="#2C2C3A"/>
+				<textElement><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$F{ingrediente}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="258" y="2" width="52" height="12" forecolor="#534AB7"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{unidad}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="312" y="2" width="120" height="12" forecolor="#2C2C3A"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{movimiento}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="434" y="2" width="52" height="12" forecolor="#0F6E56">
+					<printWhenExpression><![CDATA[$F{tipo}.equalsIgnoreCase("ENTRADA")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center"><font fontName="Arial" size="7" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="434" y="2" width="52" height="12" forecolor="#993C1D">
+					<printWhenExpression><![CDATA[$F{tipo}.equalsIgnoreCase("SALIDA")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center"><font fontName="Arial" size="7" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+			</textField>
+
+			<textField pattern="#,##0.000">
+				<reportElement x="488" y="2" width="62" height="12" forecolor="#2C2C3A"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
+			</textField>
+
+			<textField pattern="#,##0.000">
+				<reportElement x="552" y="2" width="64" height="12" forecolor="#5F5E5A"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{saldo_anterior}]]></textFieldExpression>
+			</textField>
+
+			<textField pattern="#,##0.000">
+				<reportElement x="618" y="2" width="64" height="12" forecolor="#0F6E56">
+					<printWhenExpression><![CDATA[$F{saldo_nuevo} >= $F{saldo_anterior}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$F{saldo_nuevo}]]></textFieldExpression>
+			</textField>
+
+			<textField pattern="#,##0.000">
+				<reportElement x="618" y="2" width="64" height="12" forecolor="#993C1D">
+					<printWhenExpression><![CDATA[$F{saldo_nuevo} < $F{saldo_anterior}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$F{saldo_nuevo}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="684" y="2" width="80" height="12" forecolor="#444441"/>
+				<textElement><font fontName="Arial" size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
+			</textField>
+
+			<textField>
+				<reportElement x="766" y="2" width="240" height="12" forecolor="#185FA5"/>
+				<textElement><font fontName="Arial" size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• COLUMN FOOTER â•â•â•â•â•â•â•â•â•â• -->
+	<columnFooter>
+		<band height="18" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="1010" height="18" backcolor="#E8E5FF" forecolor="#E8E5FF" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="330" y="3" width="154" height="12" forecolor="#534AB7"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<text><![CDATA[Total movimientos en esta pagina:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="488" y="3" width="62" height="12" forecolor="#534AB7"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• PAGE FOOTER â•â•â•â•â•â•â•â•â•â• -->
+	<pageFooter>
+		<band height="24" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="1010" height="1" backcolor="#1A1A2E" forecolor="#1A1A2E" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="4" width="250" height="12" forecolor="#888780"/>
+				<textElement><font fontName="Arial" size="7"/></textElement>
+				<text><![CDATA[Cafe de Medianoche - Inventario Confidencial]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="820" y="4" width="40" height="12" forecolor="#888780"/>
+				<textElement textAlignment="Right"><font fontName="Arial" size="7"/></textElement>
+				<text><![CDATA[Pagina]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="862" y="4" width="20" height="12" forecolor="#534AB7"/>
+				<textElement><font fontName="Arial" size="7" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="882" y="4" width="16" height="12" forecolor="#888780"/>
+				<textElement><font fontName="Arial" size="7"/></textElement>
+				<text><![CDATA[de]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="900" y="4" width="20" height="12" forecolor="#534AB7"/>
+				<textElement><font fontName="Arial" size="7" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+
+	<!-- â•â•â•â•â•â•â•â•â•â• SUMMARY â•â•â•â•â•â•â•â•â•â• -->
+	<summary>
+		<band height="70" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="1010" height="2" backcolor="#5DCAA5" forecolor="#5DCAA5" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="4" width="1010" height="64" backcolor="#1A1A2E" forecolor="#1A1A2E" mode="Opaque"/>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="12" width="140" height="14" forecolor="#FFFFFF"/>
+				<textElement><font fontName="Georgia" size="11" isBold="true"/></textElement>
+				<text><![CDATA[Resumen General]]></text>
+			</staticText>
+
+			<staticText>
+				<reportElement x="280" y="10" width="100" height="12" forecolor="#9FE1CB"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="8"/></textElement>
+				<text><![CDATA[Total Movimientos]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="280" y="24" width="100" height="22" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Center"><font fontName="Georgia" size="16" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_REGISTROS}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="500" y="10" width="120" height="12" forecolor="#9FE1CB"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="8"/></textElement>
+				<text><![CDATA[Total Entradas]]></text>
+			</staticText>
+			<textField pattern="#,##0.000">
+				<reportElement x="500" y="24" width="120" height="22" forecolor="#5DCAA5"/>
+				<textElement textAlignment="Center"><font fontName="Georgia" size="14" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_ENTRADAS}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="700" y="10" width="120" height="12" forecolor="#9FE1CB"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="8"/></textElement>
+				<text><![CDATA[Total Salidas]]></text>
+			</staticText>
+			<textField pattern="#,##0.000">
+				<reportElement x="700" y="24" width="120" height="22" forecolor="#F0997B"/>
+				<textElement textAlignment="Center"><font fontName="Georgia" size="14" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_SALIDAS}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="0" y="52" width="1010" height="12" forecolor="#4A4A6A"/>
+				<textElement textAlignment="Center"><font fontName="Arial" size="7"/></textElement>
+				<text><![CDATA[Reporte generado automaticamente por el Sistema de Gestion - Cafe de Medianoche]]></text>
+			</staticText>
+		</band>
+	</summary>
+
+</jasperReport>

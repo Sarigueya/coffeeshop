@@ -80,4 +80,14 @@ public class KardexRestImpl implements KardexRest {
         }
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<byte[]> descargarReportePdf() {
+        try {
+            return kardexService.generarReportePdf();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
 }
