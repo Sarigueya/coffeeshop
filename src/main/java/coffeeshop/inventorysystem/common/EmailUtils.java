@@ -57,7 +57,7 @@ public class EmailUtils {
                 + "<b>" + messageSource.getMessage("email.forgot.html.email", null, locale) + " </b> " + to + " <br>"
                 + "<b>" + messageSource.getMessage("email.forgot.html.password", null, locale) + " </b> " + password + "<br>"
                 + "<b>" + messageSource.getMessage("email.forgot.html.remember", null, locale) + " </b> " + "<br>"
-                + "<a href=\"http://localhost:4200/\">" + messageSource.getMessage("email.forgot.html.login", null, locale) + "</a></p>";
+                + "<a href=\"https://localhost:4200/\">" + messageSource.getMessage("email.forgot.html.login", null, locale) + "</a></p>";
         message.setContent(htmlMsg, "text/html");
         emailSender.send(message);
     }

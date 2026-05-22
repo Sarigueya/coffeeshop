@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface RecetaDetalleDao extends JpaRepository<RecetaDetalle, Integer> {
     List<RecetaDetalle> findByRecetaId(Integer recetaId);
+
+    void deleteByRecetaId(Integer recetaId);
 }

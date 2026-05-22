@@ -19,6 +19,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,17 +75,18 @@ public class ProductoServiceImpl implements ProductoService {
                 receta.setDescripcion(messageSource.getMessage("producto.recipe.description",
                         new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()));
                 receta.setActivo(true);
-                receta = recetaDao.save(receta);
 
+                List<RecetaDetalle> detalles = new ArrayList<>();
                 for (RecetaDetalleRequest detalleReq : request.getRecetaDetalles()) {
                     Ingrediente ingrediente = ingredienteDao.findById(detalleReq.getIngredienteId()).get();
                     RecetaDetalle detalle = new RecetaDetalle();
                     detalle.setReceta(receta);
                     detalle.setIngrediente(ingrediente);
                     detalle.setCantidadRequerida(detalleReq.getCantidadRequerida());
-                    recetaDetalleDao.save(detalle);
+                    detalles.add(detalle);
                 }
-
+                receta.setDetalles(detalles);
+                receta = recetaDao.save(receta);
                 producto.setReceta(receta);
             }
 
@@ -99,6 +101,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<String> update(ProductoRequest request) {
         try {
             Optional<Producto> optional = productoDao.findById(request.getId());
@@ -133,29 +136,32 @@ public class ProductoServiceImpl implements ProductoService {
                         }
                     }
 
-                    Receta receta = producto.getReceta();
-                    if (receta == null) {
-                        receta = new Receta();
-                        String nombre = request.getNombre() != null ? request.getNombre() : producto.getNombre();
-                        receta.setNombre(nombre);
-                        receta.setDescripcion(messageSource.getMessage("producto.recipe.description",
-                                new Object[]{nombre}, LocaleContextHolder.getLocale()));
-                        receta.setActivo(true);
-                        receta = recetaDao.save(receta);
-                    } else {
-                        recetaDetalleDao.findByRecetaId(receta.getId())
-                                .forEach(rd -> recetaDetalleDao.delete(rd));
+                    if (producto.getReceta() != null) {
+                        Integer recetaIdVieja = producto.getReceta().getId();
+                        producto.setReceta(null);
+                        productoDao.save(producto);
+                        recetaDetalleDao.deleteByRecetaId(recetaIdVieja);
+                        recetaDao.deleteById(recetaIdVieja);
                     }
 
+                    Receta receta = new Receta();
+                    String nombre = request.getNombre() != null ? request.getNombre() : producto.getNombre();
+                    receta.setNombre(nombre);
+                    receta.setDescripcion(messageSource.getMessage("producto.recipe.description",
+                            new Object[]{nombre}, LocaleContextHolder.getLocale()));
+                    receta.setActivo(true);
+
+                    List<RecetaDetalle> detalles = new ArrayList<>();
                     for (RecetaDetalleRequest detalleReq : request.getRecetaDetalles()) {
                         Ingrediente ingrediente = ingredienteDao.findById(detalleReq.getIngredienteId()).get();
                         RecetaDetalle detalle = new RecetaDetalle();
                         detalle.setReceta(receta);
                         detalle.setIngrediente(ingrediente);
                         detalle.setCantidadRequerida(detalleReq.getCantidadRequerida());
-                        recetaDetalleDao.save(detalle);
+                        detalles.add(detalle);
                     }
-
+                    receta.setDetalles(detalles);
+                    receta = recetaDao.save(receta);
                     producto.setReceta(receta);
                 }
 
@@ -174,10 +180,21 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<String> delete(Integer id) {
         try {
-            if (productoDao.existsById(id)) {
-                productoDao.deleteById(id);
+            Optional<Producto> optional = productoDao.findById(id);
+            if (optional.isPresent()) {
+                Producto producto = optional.get();
+                Receta receta = producto.getReceta();
+                if (receta != null) {
+                    Integer recetaId = receta.getId();
+                    producto.setReceta(null);
+                    productoDao.save(producto);
+                    recetaDetalleDao.deleteByRecetaId(recetaId);
+                    recetaDao.deleteById(recetaId);
+                }
+                productoDao.delete(producto);
                 return CafeUtils.getResponseEntity(
                         messageSource.getMessage("producto.deleted", null, LocaleContextHolder.getLocale()),
                         HttpStatus.OK);
