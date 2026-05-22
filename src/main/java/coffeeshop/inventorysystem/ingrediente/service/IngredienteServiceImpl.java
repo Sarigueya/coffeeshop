@@ -38,6 +38,13 @@ public class IngredienteServiceImpl implements IngredienteService {
 
         try {
 
+            if (ingredienteDao.existsByNombre(request.getNombre())) {
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("ingrediente.name.exists",
+                                new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
+            }
+
             Ingrediente ingrediente = new Ingrediente();
             ingrediente.setNombre(request.getNombre());
             ingrediente.setCostoUnitario(request.getCostoUnitario());
@@ -73,7 +80,15 @@ public class IngredienteServiceImpl implements IngredienteService {
 
             if (optional.isPresent()) {
                 Ingrediente ingrediente = optional.get();
-                if (request.getNombre() != null) ingrediente.setNombre(request.getNombre());
+                if (request.getNombre() != null) {
+                    if (ingredienteDao.existsByNombreAndIdNot(request.getNombre(), request.getId())) {
+                        return CafeUtils.getResponseEntity(
+                                messageSource.getMessage("ingrediente.name.exists",
+                                        new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                    ingrediente.setNombre(request.getNombre());
+                }
                 if (request.getCostoUnitario() != null) ingrediente.setCostoUnitario(request.getCostoUnitario());
                 if (request.getActivo() != null) ingrediente.setActivo(request.getActivo());
                 if (request.getStockMinimo() != null) ingrediente.setStockMinimo(request.getStockMinimo());

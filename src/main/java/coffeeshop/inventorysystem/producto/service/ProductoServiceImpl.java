@@ -42,6 +42,13 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public ResponseEntity<String> create(ProductoRequest request) {
         try {
+            if (productoDao.existsByNombre(request.getNombre())) {
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("producto.name.exists",
+                                new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
+            }
+
             Producto producto = new Producto();
             producto.setNombre(request.getNombre());
             producto.setDescripcion(request.getDescripcion());
@@ -97,7 +104,15 @@ public class ProductoServiceImpl implements ProductoService {
             Optional<Producto> optional = productoDao.findById(request.getId());
             if (optional.isPresent()) {
                 Producto producto = optional.get();
-                if (request.getNombre() != null) producto.setNombre(request.getNombre());
+                if (request.getNombre() != null) {
+                    if (productoDao.existsByNombreAndIdNot(request.getNombre(), request.getId())) {
+                        return CafeUtils.getResponseEntity(
+                                messageSource.getMessage("producto.name.exists",
+                                        new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                    producto.setNombre(request.getNombre());
+                }
                 if (request.getDescripcion() != null) producto.setDescripcion(request.getDescripcion());
                 if (request.getPrecioVenta() != null) producto.setPrecioVenta(request.getPrecioVenta());
                 if (request.getActivo() != null) producto.setActivo(request.getActivo());

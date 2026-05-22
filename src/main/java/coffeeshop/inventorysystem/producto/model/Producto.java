@@ -21,7 +21,7 @@ public class Producto implements Serializable {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", unique = true)
     private String nombre;
 
     @Column(name = "descripcion")
