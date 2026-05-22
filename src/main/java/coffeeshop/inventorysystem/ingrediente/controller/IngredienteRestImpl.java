@@ -14,6 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementación del controlador REST de ingredientes.
+ * <p>
+ * Expone los endpoints definidos en {@link IngredienteRest} y delega
+ * la lógica de negocio a {@link IngredienteService}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @RestController
 @RequiredArgsConstructor
 public class IngredienteRestImpl implements IngredienteRest {

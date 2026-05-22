@@ -12,6 +12,16 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuración de OpenAPI/Swagger para la documentación de la API.
+ * <p>
+ * Define el esquema de seguridad JWT (bearer token), la información
+ * de la API y los servidores disponibles. La descripción y título
+ * se obtienen de los mensajes i18n.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Configuration
 public class OpenApiConfig {
 

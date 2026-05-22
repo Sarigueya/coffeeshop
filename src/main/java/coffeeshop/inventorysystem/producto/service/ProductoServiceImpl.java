@@ -25,6 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementación de {@link ProductoService}.
+ * <p>
+ * Gestiona la persistencia de productos y sus recetas, validando
+ * nombres únicos, existencia de ingredientes y limpiando recetas
+ * huérfanas en actualizaciones y eliminaciones.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

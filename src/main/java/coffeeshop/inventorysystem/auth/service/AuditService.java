@@ -8,6 +8,15 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+/**
+ * Servicio de auditoría para registrar acciones importantes del sistema.
+ * <p>
+ * Persiste un registro en {@link coffeeshop.inventorysystem.auth.model.AuditLog}
+ * con el usuario, la acción realizada y un detalle descriptivo.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class AuditService {

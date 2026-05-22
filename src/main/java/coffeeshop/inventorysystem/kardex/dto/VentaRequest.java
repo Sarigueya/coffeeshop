@@ -5,6 +5,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
+/**
+ * DTO que encapsula los datos para registrar una venta.
+ * <p>
+ * La venta consume automáticamente el stock de los ingredientes
+ * asociados a la receta del producto.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Solicitud de venta de producto")
 public class VentaRequest {

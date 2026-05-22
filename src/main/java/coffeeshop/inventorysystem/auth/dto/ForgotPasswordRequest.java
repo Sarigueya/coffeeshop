@@ -5,6 +5,15 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/**
+ * DTO que encapsula el correo electrónico para recuperar la contraseña.
+ * <p>
+ * Envía una contraseña temporal al correo especificado si existe
+ * en el sistema.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Solicitud de recuperación de contraseña")
 public class ForgotPasswordRequest {

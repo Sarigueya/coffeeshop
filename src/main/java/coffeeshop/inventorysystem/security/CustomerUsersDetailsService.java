@@ -11,10 +11,18 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Implementación personalizada de {@link UserDetailsService} para Spring Security.
+ * <p>
+ * Carga los datos del usuario desde la base de datos por correo electrónico
+ * y construye un objeto {@link UserDetails} con su rol para la autenticación.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Slf4j
 @Service
 public class CustomerUsersDetailsService implements UserDetailsService {

@@ -177,6 +177,16 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <locale>es_MX</locale>
+                    <encoding>UTF-8</encoding>
+                    <doclint>none</doclint>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

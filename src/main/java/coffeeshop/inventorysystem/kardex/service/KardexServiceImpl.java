@@ -43,6 +43,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementación de {@link KardexService}.
+ * <p>
+ * Procesa los movimientos de inventario actualizando los saldos
+ * en el kardex, valida stock suficiente para salidas y ventas,
+ * y genera reportes PDF del inventario usando JasperReports.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -1,7 +1,6 @@
 package coffeeshop.inventorysystem.auth.controller;
 
 import coffeeshop.inventorysystem.auth.dto.*;
-import coffeeshop.inventorysystem.auth.dto.UserWrapper;
 import coffeeshop.inventorysystem.auth.service.UserService;
 import coffeeshop.inventorysystem.common.CafeConstants;
 import coffeeshop.inventorysystem.common.CafeUtils;
@@ -14,6 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementación del controlador REST de usuarios y autenticación.
+ * <p>
+ * Expone los endpoints definidos en {@link UserRest} y delega
+ * la lógica de negocio a {@link UserService}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @RestController
 @RequiredArgsConstructor
 public class UserRestImpl implements UserRest {

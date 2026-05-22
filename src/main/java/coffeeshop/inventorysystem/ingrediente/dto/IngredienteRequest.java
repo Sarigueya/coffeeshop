@@ -5,6 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * DTO que encapsula los datos para crear o actualizar un ingrediente.
+ * <p>
+ * El campo {@code id} se usa solo para actualizaciones. El campo
+ * {@code unidadMedidaId} es opcional y referencia una unidad de medida existente.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Solicitud de creación o actualización de ingrediente")
 public class IngredienteRequest {

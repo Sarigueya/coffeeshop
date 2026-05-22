@@ -4,6 +4,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * DTO que representa un ingrediente con su cantidad dentro de una receta.
+ * <p>
+ * Se usa tanto en creación como actualización de productos para
+ * definir los ingredientes necesarios y sus cantidades.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Detalle de ingrediente requerido en una receta")
 public class RecetaDetalleRequest {

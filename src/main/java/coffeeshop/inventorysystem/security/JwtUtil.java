@@ -14,6 +14,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Utilidad para la generación y validación de tokens JWT.
+ * <p>
+ * Utiliza HMAC-SHA256 para firmar los tokens con una clave secreta
+ * configurada en las propiedades de la aplicación. Cada token incluye
+ * el nombre de usuario ({@code subject}) y el rol como {@code claim}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Service
 public class JwtUtil {
 

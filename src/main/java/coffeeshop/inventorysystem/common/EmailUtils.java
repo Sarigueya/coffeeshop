@@ -13,6 +13,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Servicio de utilidades para el envío de correos electrónicos.
+ * <p>
+ * Soporta mensajes simples con copia oculta (CC) y mensajes HTML
+ * con formato para recuperación de contraseñas.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class EmailUtils {
@@ -35,15 +44,6 @@ public class EmailUtils {
         if (list != null && list.size() > 0)
             message.setCc(list.toArray(new String[0]));
         emailSender.send(message);
-    }
-
-    private String[] getCcArray(List<String> ccList) {
-        String[] cc = new String[ccList.size()];
-
-        for (int i = 0; i < ccList.size(); i++) {
-            cc[i] = ccList.get(i);
-        }
-        return cc;
     }
 
     public void forgotMail(String to, String subject, String password) throws MessagingException {

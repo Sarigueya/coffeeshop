@@ -7,6 +7,16 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * DTO que encapsula los datos para crear o actualizar un producto.
+ * <p>
+ * El campo {@code id} se usa solo para actualizaciones; para creación
+ * debe ser {@code null}. La lista {@code recetaDetalles} es opcional
+ * y define los ingredientes de la receta del producto.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Solicitud de creación o actualización de producto")
 public class ProductoRequest {

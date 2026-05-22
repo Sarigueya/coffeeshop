@@ -14,6 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementación del controlador REST de unidades de medida.
+ * <p>
+ * Expone los endpoints definidos en {@link UnidadMedidaRest} y delega
+ * la lógica de negocio a {@link UnidadMedidaService}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @RestController
 @RequiredArgsConstructor
 public class UnidadMedidaRestImpl implements UnidadMedidaRest {

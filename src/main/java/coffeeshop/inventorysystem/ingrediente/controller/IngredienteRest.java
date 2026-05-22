@@ -2,7 +2,6 @@ package coffeeshop.inventorysystem.ingrediente.controller;
 
 import coffeeshop.inventorysystem.ingrediente.dto.IngredienteRequest;
 import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
-import coffeeshop.inventorysystem.ingrediente.service.IngredienteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -2,7 +2,6 @@ package coffeeshop.inventorysystem.ingrediente.controller;
 
 import coffeeshop.inventorysystem.ingrediente.dto.UnidadMedidaRequest;
 import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
-import coffeeshop.inventorysystem.ingrediente.service.UnidadMedidaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

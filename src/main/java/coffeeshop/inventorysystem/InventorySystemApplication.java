@@ -13,6 +13,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * Clase principal de la aplicación Spring Boot.
+ * <p>
+ * Inicializa datos semilla al arrancar: roles ({@code admin}, {@code user}),
+ * unidades de medida predeterminadas y tipos de movimiento de inventario.
+ * </p>
+ *
+ * @since 1.0
+ */
 @SpringBootApplication
 public class InventorySystemApplication {
 

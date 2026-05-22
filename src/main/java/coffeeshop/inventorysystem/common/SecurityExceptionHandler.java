@@ -8,6 +8,15 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Manejador global de excepciones de seguridad.
+ * <p>
+ * Captura las excepciones de acceso denegado ({@link org.springframework.security.access.AccessDeniedException})
+ * y devuelve una respuesta HTTP 403 con un mensaje i18n.
+ * </p>
+ *
+ * @since 1.0
+ */
 @RestControllerAdvice
 public class SecurityExceptionHandler {
 

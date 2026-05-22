@@ -20,6 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementación de {@link IngredienteService}.
+ * <p>
+ * Gestiona la persistencia de ingredientes validando nombres únicos,
+ * existencia de unidades de medida, y desactivación lógica cuando
+ * el ingrediente tiene movimientos de inventario asociados.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -1,8 +1,6 @@
 package coffeeshop.inventorysystem.auth.controller;
 
 import coffeeshop.inventorysystem.auth.dto.*;
-import coffeeshop.inventorysystem.auth.dto.UserWrapper;
-import coffeeshop.inventorysystem.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

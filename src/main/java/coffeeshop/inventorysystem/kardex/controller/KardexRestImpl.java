@@ -15,6 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementación del controlador REST de kardex e inventario.
+ * <p>
+ * Expone los endpoints definidos en {@link KardexRest} y delega
+ * la lógica de negocio a {@link KardexService}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @RestController
 @RequiredArgsConstructor
 public class KardexRestImpl implements KardexRest {

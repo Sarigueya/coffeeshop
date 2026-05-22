@@ -11,7 +11,6 @@ import coffeeshop.inventorysystem.common.EmailUtils;
 import coffeeshop.inventorysystem.security.CustomerUsersDetailsService;
 import coffeeshop.inventorysystem.security.JwtFilter;
 import coffeeshop.inventorysystem.security.JwtUtil;
-import coffeeshop.inventorysystem.auth.service.AuditService;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * Implementación de {@link UserService}.
+ * <p>
+ * Maneja registro, autenticación JWT, administración de usuarios
+ * y recuperación de contraseñas. Utiliza {@link AuditService}
+ * para registrar acciones importantes.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

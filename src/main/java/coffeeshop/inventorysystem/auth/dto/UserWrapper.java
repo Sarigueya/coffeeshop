@@ -4,6 +4,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO que representa una vista resumida de un usuario.
+ * <p>
+ * Se usa para listar usuarios sin exponer datos sensibles
+ * como la contraseña. Su constructor es utilizado por la
+ * {@code @NamedQuery} en {@link coffeeshop.inventorysystem.auth.model.User}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @NoArgsConstructor
 @Schema(description = "Información resumida de un usuario")

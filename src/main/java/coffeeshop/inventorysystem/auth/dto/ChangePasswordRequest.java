@@ -4,6 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/**
+ * DTO que encapsula los datos para cambiar la contraseña del usuario autenticado.
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Solicitud de cambio de contraseña")
 public class ChangePasswordRequest {

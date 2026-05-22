@@ -19,6 +19,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * Configuración de seguridad Spring Security.
+ * <p>
+ * Define la cadena de filtros, autenticación sin estado (stateless),
+ * CORS para el frontend en {@code https://localhost:4200}, y las
+ * rutas públicas que no requieren autenticación.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

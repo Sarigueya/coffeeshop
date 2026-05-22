@@ -9,6 +9,15 @@ import org.springframework.web.servlet.LocaleResolver;
 
 import java.util.Locale;
 
+/**
+ * Configuración de internacionalización (i18n).
+ * <p>
+ * Define el resolvedor de mensajes desde archivos {@code messages*.properties}
+ * y establece el locale por defecto a español ({@code es}).
+ * </p>
+ *
+ * @since 1.0
+ */
 @Configuration
 public class I18nConfig {
 

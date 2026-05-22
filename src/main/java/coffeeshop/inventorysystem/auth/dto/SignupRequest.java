@@ -5,6 +5,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/**
+ * DTO que encapsula los datos para registrar un nuevo usuario.
+ * <p>
+ * El primer usuario registrado en el sistema obtiene rol ADMIN
+ * automáticamente; los siguientes se registran como USER y
+ * requieren aprobación de un administrador.
+ * </p>
+ *
+ * @since 1.0
+ */
 @Data
 @Schema(description = "Solicitud de registro de nuevo usuario")
 public class SignupRequest {
