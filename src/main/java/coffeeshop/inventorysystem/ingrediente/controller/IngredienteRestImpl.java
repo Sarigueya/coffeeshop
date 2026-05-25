@@ -1,0 +1,84 @@
+package coffeeshop.inventorysystem.ingrediente.controller;
+
+import coffeeshop.inventorysystem.common.CafeConstants;
+import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.ingrediente.dto.IngredienteRequest;
+import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
+import coffeeshop.inventorysystem.ingrediente.service.IngredienteService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Implementación del controlador REST de ingredientes.
+ * <p>
+ * Expone los endpoints definidos en {@link IngredienteRest} y delega
+ * la lógica de negocio a {@link IngredienteService}.
+ * </p>
+ *
+ * @since 1.0
+ */
+@RestController
+@RequiredArgsConstructor
+public class IngredienteRestImpl implements IngredienteRest {
+
+    private final IngredienteService ingredienteService;
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> create(IngredienteRequest request) {
+        try {
+            return ingredienteService.create(request);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> update(IngredienteRequest request) {
+        try {
+            return ingredienteService.update(request);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> delete(Integer id) {
+        try {
+            return ingredienteService.delete(id);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<Ingrediente> getById(Integer id) {
+        try {
+            return ingredienteService.getById(id);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new Ingrediente(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<Ingrediente>> getAll() {
+        try {
+            return ingredienteService.getAll();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}

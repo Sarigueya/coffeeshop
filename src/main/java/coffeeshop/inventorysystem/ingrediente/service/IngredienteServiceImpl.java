@@ -1,0 +1,181 @@
+package coffeeshop.inventorysystem.ingrediente.service;
+
+import coffeeshop.inventorysystem.common.CafeConstants;
+import coffeeshop.inventorysystem.common.CafeUtils;
+import coffeeshop.inventorysystem.ingrediente.dto.IngredienteRequest;
+import coffeeshop.inventorysystem.ingrediente.model.Ingrediente;
+import coffeeshop.inventorysystem.ingrediente.model.UnidadMedida;
+import coffeeshop.inventorysystem.ingrediente.repository.IngredienteDao;
+import coffeeshop.inventorysystem.ingrediente.repository.UnidadMedidaDao;
+import coffeeshop.inventorysystem.kardex.repository.KardexDao;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementación de {@link IngredienteService}.
+ * <p>
+ * Gestiona la persistencia de ingredientes validando nombres únicos,
+ * existencia de unidades de medida, y desactivación lógica cuando
+ * el ingrediente tiene movimientos de inventario asociados.
+ * </p>
+ *
+ * @since 1.0
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class IngredienteServiceImpl implements IngredienteService {
+
+    private final IngredienteDao ingredienteDao;
+
+    private final UnidadMedidaDao unidadMedidaDao;
+
+    private final KardexDao kardexDao;
+
+    private final MessageSource messageSource;
+
+    @Override
+    public ResponseEntity<String> create(IngredienteRequest request) {
+
+        try {
+
+            if (ingredienteDao.existsByNombre(request.getNombre())) {
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("ingrediente.name.exists",
+                                new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            Ingrediente ingrediente = new Ingrediente();
+            ingrediente.setNombre(request.getNombre());
+            ingrediente.setCostoUnitario(request.getCostoUnitario());
+            ingrediente.setActivo(true);
+            ingrediente.setStockMinimo(request.getStockMinimo());
+
+            if (request.getUnidadMedidaId() != null) {
+                Optional<UnidadMedida> optionalUnidad = unidadMedidaDao.findById(request.getUnidadMedidaId());
+
+                if (optionalUnidad.isEmpty()) {
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("ingrediente.unit.not.found", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.BAD_REQUEST);
+                }
+                ingrediente.setUnidadMedida(optionalUnidad.get());
+            }
+
+            ingredienteDao.save(ingrediente);
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("ingrediente.created", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.OK);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> update(IngredienteRequest request) {
+        try {
+            Optional<Ingrediente> optional = ingredienteDao.findById(request.getId());
+
+            if (optional.isPresent()) {
+                Ingrediente ingrediente = optional.get();
+                if (request.getNombre() != null) {
+                    if (ingredienteDao.existsByNombreAndIdNot(request.getNombre(), request.getId())) {
+                        return CafeUtils.getResponseEntity(
+                                messageSource.getMessage("ingrediente.name.exists",
+                                        new Object[]{request.getNombre()}, LocaleContextHolder.getLocale()),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                    ingrediente.setNombre(request.getNombre());
+                }
+                if (request.getCostoUnitario() != null) ingrediente.setCostoUnitario(request.getCostoUnitario());
+                if (request.getActivo() != null) ingrediente.setActivo(request.getActivo());
+                if (request.getStockMinimo() != null) ingrediente.setStockMinimo(request.getStockMinimo());
+                if (request.getUnidadMedidaId() != null) {
+                    Optional<UnidadMedida> um = unidadMedidaDao.findById(request.getUnidadMedidaId());
+
+                    if (um.isEmpty()) {
+                        return CafeUtils.getResponseEntity(
+                                messageSource.getMessage("ingrediente.unit.not.found", null, LocaleContextHolder.getLocale()),
+                                HttpStatus.BAD_REQUEST
+                        );
+                    }
+                    um.ifPresent(ingrediente::setUnidadMedida);
+                }
+                ingredienteDao.save(ingrediente);
+                return CafeUtils.getResponseEntity(
+                        messageSource.getMessage("ingrediente.updated", null, LocaleContextHolder.getLocale()),
+                        HttpStatus.OK);
+            }
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("ingrediente.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> delete(Integer id) {
+        try {
+            if (ingredienteDao.existsById(id)) {
+                if (kardexDao.findByIngredienteId(id).isEmpty()) {
+                    ingredienteDao.deleteById(id);
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("ingrediente.deleted", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.OK);
+                } else {
+                    Ingrediente ingrediente = ingredienteDao.findById(id).get();
+                    ingrediente.setActivo(false);
+                    ingredienteDao.save(ingrediente);
+                    return CafeUtils.getResponseEntity(
+                            messageSource.getMessage("ingrediente.deactivated", null, LocaleContextHolder.getLocale()),
+                            HttpStatus.OK
+                    );
+                }
+            }
+            return CafeUtils.getResponseEntity(
+                    messageSource.getMessage("ingrediente.not.found", null, LocaleContextHolder.getLocale()),
+                    HttpStatus.BAD_REQUEST);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<Ingrediente> getById(Integer id) {
+        try {
+            Optional<Ingrediente> optional = ingredienteDao.findById(id);
+            if (optional.isPresent()) {
+                return new ResponseEntity<>(optional.get(), HttpStatus.OK);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new Ingrediente(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<Ingrediente>> getAll() {
+        try {
+            return new ResponseEntity<>(ingredienteDao.findAll(), HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}

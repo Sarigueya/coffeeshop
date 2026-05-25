@@ -102,16 +102,24 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PDF generation -->
+        <!-- OpenAPI / Swagger -->
         <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
-            <version>5.5.13.3</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.0.2</version>
         </dependency>
+
+        <!-- JasperReports -->
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>3.0.3</version>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.21.4</version>
+        </dependency>
+
+        <!-- Groovy (lenguaje de expresiones en JRXML) -->
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
         </dependency>
 
         <!-- Utilidades Google -->
@@ -167,6 +175,16 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <locale>es_MX</locale>
+                    <encoding>UTF-8</encoding>
+                    <doclint>none</doclint>
                 </configuration>
             </plugin>
         </plugins>
